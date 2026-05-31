@@ -1,0 +1,29 @@
+{
+  "name": "muscle-money",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Production monorepo for the Muscle Money fintech learning and investment simulator platform.",
+  "packageManager": "npm@11.6.1",
+  "workspaces": [
+    "apps/api",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,yml,yaml,prisma}\"",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "api:prisma:generate": "npm --workspace @muscle-money/api run prisma:generate",
+    "api:prisma:migrate": "npm --workspace @muscle-money/api run prisma:migrate"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
+    "eslint": "^9.39.4",
+    "prettier": "^3.3.3",
+    "turbo": "^2.1.3"
+  }
+}

@@ -1,0 +1,35 @@
+import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import helmet from 'helmet';
+import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const config = app.get(ConfigService);
+  const apiPrefix = config.getOrThrow<string>('API_PREFIX');
+  const corsOrigins = config.get<string>('CORS_ORIGINS')?.split(',') ?? [];
+
+  app.setGlobalPrefix(apiPrefix);
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
+  app.use(helmet());
+  app.enableCors({ origin: corsOrigins, credentials: true });
+  app.use(new RequestLoggerMiddleware().use);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalInterceptors(new ResponseInterceptor());
+
+  await app.listen(config.get<number>('API_PORT', 3000));
+}
+
+void bootstrap();

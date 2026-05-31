@@ -1,0 +1,533 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING_EMAIL_VERIFICATION
+  ACTIVE
+  SUSPENDED
+}
+
+enum RiskProfile {
+  CONSERVATIVE
+  BALANCED
+  AGGRESSIVE
+}
+
+enum KnowledgeLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum LedgerDirection {
+  CREDIT
+  DEBIT
+}
+
+enum WalletTransactionType {
+  ROUND_UP
+  SCHEDULED_SAVE
+  MANUAL_SAVE
+  REVERSAL
+}
+
+enum SavingsRuleType {
+  ROUND_UP
+  SCHEDULED
+}
+
+enum SavingsRuleStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum LessonDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum QuizQuestionType {
+  SINGLE_CHOICE
+  MULTI_CHOICE
+}
+
+enum MarketAssetType {
+  STOCK
+  MUTUAL_FUND
+  DIGITAL_GOLD
+}
+
+enum SimulatorOrderSide {
+  BUY
+  SELL
+}
+
+enum SimulatorOrderStatus {
+  PENDING
+  EXECUTED
+  REJECTED
+  CANCELLED
+}
+
+enum NotificationChannel {
+  PUSH
+  EMAIL
+  IN_APP
+}
+
+model User {
+  id                   String             @id @default(uuid()) @db.Uuid
+  email                String             @unique
+  fullName             String
+  passwordHash         String
+  refreshTokenHash     String?
+  emailVerifiedAt      DateTime?
+  role                 UserRole           @default(STUDENT)
+  status               UserStatus         @default(PENDING_EMAIL_VERIFICATION)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  authSessions         AuthSession[]
+  emailVerificationTokens EmailVerificationToken[]
+  profile              Profile?
+  wallet               Wallet?
+  savingsRules         SavingsRule[]
+  quizAttempts         QuizAttempt[]
+  learningProgress     LearningProgress[]
+  learningActionCompletions LearningActionCompletion[]
+  simulatorAccount     SimulatorAccount?
+  notifications        Notification[]
+  streak               Streak?
+  userBadges           UserBadge[]
+  auditLogs            AuditLog[]
+  savingsGoals         SavingsGoal[]
+  aiCoachFeedbacks     AiCoachFeedback[]
+  externalSavings      ExternalSaving[]
+  spendings            Spending[]
+
+  @@index([status])
+  @@map("users")
+}
+
+model AuthSession {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String
+  userAgent        String?
+  ipAddress        String?
+  revokedAt        DateTime?
+  expiresAt        DateTime
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}
+
+model EmailVerificationToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, consumedAt])
+  @@index([expiresAt])
+  @@map("email_verification_tokens")
+}
+
+model Profile {
+  id                  String          @id @default(uuid()) @db.Uuid
+  userId              String          @unique @db.Uuid
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  financialGoals      String[]        @default([])
+  riskProfile         RiskProfile?
+  knowledgeLevel      KnowledgeLevel?
+  monthlyIncomeMinor  Int?
+  ageGroup            String?
+  employmentStatus    String?
+  savingsHabit        String?
+  investmentExperience String?
+  spendingHabits      Json?
+  learningPreferences Json?
+  onboardingCompleted Boolean         @default(false)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@map("profiles")
+}
+
+model Wallet {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String              @unique @db.Uuid
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency     String              @default("INR")
+  transactions WalletTransaction[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id              String                @id @default(uuid()) @db.Uuid
+  walletId        String                @db.Uuid
+  wallet          Wallet                @relation(fields: [walletId], references: [id], onDelete: Restrict)
+  direction       LedgerDirection
+  type            WalletTransactionType
+  amountMinor     Int
+  idempotencyKey  String                @unique
+  description     String
+  metadata        Json?
+  createdAt       DateTime              @default(now())
+
+  @@index([walletId, createdAt])
+  @@map("wallet_transactions")
+}
+
+model SavingsRule {
+  id              String            @id @default(uuid()) @db.Uuid
+  userId          String            @db.Uuid
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            SavingsRuleType
+  status          SavingsRuleStatus @default(ACTIVE)
+  amountMinor     Int?
+  roundUpMultiple Int?
+  scheduleCron    String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId, status])
+  @@map("savings_rules")
+}
+
+model SavingsGoal {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @db.Uuid
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title              String
+  targetAmountMinor  Int
+  currentAmountMinor Int       @default(0)
+  targetDate         DateTime?
+  isCompleted        Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("savings_goals")
+}
+
+model Lesson {
+  id               String             @id @default(uuid()) @db.Uuid
+  slug             String             @unique
+  title            String
+  summary          String
+  difficulty       LessonDifficulty
+  estimatedMinutes Int
+  content          Json
+  quizzes          Quiz[]
+  progress         LearningProgress[]
+  actionCompletions LearningActionCompletion[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([difficulty])
+  @@map("lessons")
+}
+
+model Quiz {
+  id        String        @id @default(uuid()) @db.Uuid
+  lessonId  String        @db.Uuid
+  lesson    Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  question  String
+  type      QuizQuestionType
+  options   Json
+  answerKey Json
+  attempts  QuizAttempt[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([lessonId])
+  @@map("quizzes")
+}
+
+model QuizAttempt {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId      String   @db.Uuid
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  selected    Json
+  isCorrect   Boolean
+  xpAwarded   Int      @default(0)
+  attemptedAt DateTime @default(now())
+
+  @@index([userId, attemptedAt])
+  @@map("quiz_attempts")
+}
+
+model LearningProgress {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @db.Uuid
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId           String    @db.Uuid
+  lesson             Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completionPercent  Int       @default(0)
+  completedAt        DateTime?
+  lastInteractionAt  DateTime  @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId, completedAt])
+  @@map("learning_progress")
+}
+
+model LearningActionCompletion {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String   @db.Uuid
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  actionKey   String
+  actionType  String
+  amountMinor Int?
+  note        String?
+  metadata    Json?
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId, actionKey])
+  @@index([userId, completedAt])
+  @@map("learning_action_completions")
+}
+
+model SimulatorAccount {
+  id          String              @id @default(uuid()) @db.Uuid
+  userId      String              @unique @db.Uuid
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency    String              @default("INR")
+  positions   SimulatorPosition[]
+  orders      SimulatorOrder[]
+  ledger      SimulatorLedger[]
+  aiCoachFeedbacks AiCoachFeedback[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@map("simulator_accounts")
+}
+
+model SimulatorPosition {
+  id                String           @id @default(uuid()) @db.Uuid
+  simulatorAccountId String          @db.Uuid
+  simulatorAccount SimulatorAccount  @relation(fields: [simulatorAccountId], references: [id], onDelete: Cascade)
+  marketAssetId    String           @db.Uuid
+  marketAsset      MarketAsset       @relation(fields: [marketAssetId], references: [id], onDelete: Restrict)
+  quantity         Decimal           @db.Decimal(18, 6)
+  averagePriceMinor Int
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([simulatorAccountId, marketAssetId])
+  @@map("simulator_positions")
+}
+
+model SimulatorOrder {
+  id                  String               @id @default(uuid()) @db.Uuid
+  simulatorAccountId  String               @db.Uuid
+  simulatorAccount    SimulatorAccount     @relation(fields: [simulatorAccountId], references: [id], onDelete: Cascade)
+  marketAssetId       String               @db.Uuid
+  marketAsset         MarketAsset          @relation(fields: [marketAssetId], references: [id], onDelete: Restrict)
+  side                SimulatorOrderSide
+  quantity            Decimal              @db.Decimal(18, 6)
+  requestedPriceMinor Int
+  executedPriceMinor  Int?
+  status              SimulatorOrderStatus @default(PENDING)
+  rejectionReason     String?
+  createdAt           DateTime             @default(now())
+  executedAt          DateTime?
+
+  @@index([simulatorAccountId, createdAt])
+  @@map("simulator_orders")
+}
+
+model SimulatorLedger {
+  id                 String             @id @default(uuid()) @db.Uuid
+  simulatorAccountId String             @db.Uuid
+  simulatorAccount   SimulatorAccount   @relation(fields: [simulatorAccountId], references: [id], onDelete: Cascade)
+  direction          LedgerDirection
+  amountMinor        Int
+  orderId            String?            @db.Uuid
+  idempotencyKey     String             @unique
+  createdAt          DateTime           @default(now())
+
+  @@index([simulatorAccountId, createdAt])
+  @@map("simulator_ledger")
+}
+
+model MarketAsset {
+  id          String              @id @default(uuid()) @db.Uuid
+  symbol      String              @unique
+  name        String
+  type        MarketAssetType
+  currency    String              @default("INR")
+  snapshots   MarketSnapshot[]
+  positions   SimulatorPosition[]
+  orders      SimulatorOrder[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([type])
+  @@map("market_assets")
+}
+
+model MarketSnapshot {
+  id            String      @id @default(uuid()) @db.Uuid
+  marketAssetId String      @db.Uuid
+  marketAsset   MarketAsset @relation(fields: [marketAssetId], references: [id], onDelete: Cascade)
+  priceMinor    Int
+  source        String
+  capturedAt    DateTime    @default(now())
+
+  @@index([marketAssetId, capturedAt])
+  @@map("market_snapshots")
+}
+
+model Notification {
+  id        String              @id @default(uuid()) @db.Uuid
+  userId    String              @db.Uuid
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel   NotificationChannel
+  title     String
+  body      String
+  metadata  Json?
+  readAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+model Streak {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentCount   Int      @default(0)
+  longestCount   Int      @default(0)
+  lastActivityAt DateTime?
+  updatedAt      DateTime @updatedAt
+
+  @@map("streaks")
+}
+
+model Badge {
+  id          String      @id @default(uuid()) @db.Uuid
+  code        String      @unique
+  name        String
+  description String
+  xpReward    Int         @default(0)
+  userBadges  UserBadge[]
+  createdAt   DateTime    @default(now())
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String   @db.Uuid
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String?  @db.Uuid
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String
+  entityType  String
+  entityId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model HistoricalScenario {
+  id               String            @id @default(uuid()) @db.Uuid
+  title            String
+  description      String
+  startDate        DateTime
+  endDate          DateTime
+  startBalance     Int               @default(10000000)
+  assets           Json              
+  isActive         Boolean           @default(true)
+  aiCoachFeedbacks AiCoachFeedback[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("historical_scenarios")
+}
+
+model AiCoachFeedback {
+  id                 String              @id @default(uuid()) @db.Uuid
+  userId             String              @db.Uuid
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  simulatorAccountId String              @db.Uuid
+  simulatorAccount   SimulatorAccount    @relation(fields: [simulatorAccountId], references: [id], onDelete: Cascade)
+  scenarioId         String?             @db.Uuid
+  scenario           HistoricalScenario? @relation(fields: [scenarioId], references: [id], onDelete: SetNull)
+  feedbackText       String
+  context            Json?               
+  createdAt          DateTime            @default(now())
+
+  @@index([userId, createdAt])
+  @@map("ai_coach_feedback")
+}
+
+model ExternalSaving {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform     String   
+  amountMinor  Int      
+  month        DateTime 
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, platform, month])
+  @@map("external_savings")
+}
+
+model Spending {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountMinor  Int
+  merchant     String?
+  category     String?
+  platform     String   
+  note         String?
+  capturedAt   DateTime @default(now())
+
+  @@index([userId, capturedAt])
+  @@map("spendings")
+}

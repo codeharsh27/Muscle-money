@@ -1,0 +1,281 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Muscle Money - Learn</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#690005",
+                        "primary": "#4edea3",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "background": "#0e1511",
+                        "surface-tint": "#4edea3",
+                        "surface-variant": "#2f3632",
+                        "on-secondary": "#002e6a",
+                        "inverse-primary": "#006c49",
+                        "surface": "#0e1511",
+                        "on-tertiary-container": "#4600a7",
+                        "outline-variant": "#3c4a42",
+                        "tertiary-fixed": "#e9ddff",
+                        "on-secondary-container": "#e6ecff",
+                        "tertiary": "#d0bcff",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container-lowest": "#09100c",
+                        "on-tertiary-fixed": "#23005c",
+                        "on-surface-variant": "#bbcabf",
+                        "on-primary-container": "#00422b",
+                        "surface-container-high": "#242c27",
+                        "outline": "#86948a",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#3c0091",
+                        "secondary-container": "#0566d9",
+                        "primary-fixed": "#6ffbbe",
+                        "primary-fixed-dim": "#4edea3",
+                        "on-primary-fixed": "#002113",
+                        "surface-dim": "#0e1511",
+                        "secondary": "#adc6ff",
+                        "tertiary-fixed-dim": "#d0bcff",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#343b36",
+                        "primary-container": "#10b981",
+                        "tertiary-container": "#b090ff",
+                        "on-secondary-fixed": "#001a42",
+                        "on-secondary-fixed-variant": "#004395",
+                        "on-primary-fixed-variant": "#005236",
+                        "on-tertiary-fixed-variant": "#5516be",
+                        "inverse-on-surface": "#2b322d",
+                        "error-container": "#93000a",
+                        "on-primary": "#003824",
+                        "on-surface": "#dde4dd",
+                        "surface-container-highest": "#2f3632",
+                        "inverse-surface": "#dde4dd",
+                        "surface-container": "#1a211d",
+                        "on-background": "#dde4dd",
+                        "surface-container-low": "#161d19"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "container-margin": "20px",
+                        "base": "8px",
+                        "section-gap": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-caps": ["JetBrains Mono"],
+                        "kpi-stat": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "kpi-stat": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .progress-ring {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 20; /* Example default */
+            transition: stroke-dashoffset 0.5s ease;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-md flex justify-between items-center px-container-margin py-4 w-full z-50 sticky top-0 transition-all duration-200 flat no shadows">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container flex items-center justify-center bg-surface-container-high">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A high-quality, close-up portrait of a young Gen-Z individual with a confident expression, bathed in soft, high-key studio lighting. The background is a vibrant, abstract gradient of deep blacks and pristine whites, punctuating a modern light-mode aesthetic. The mood is energetic and technologically advanced, fitting a motivational finance app persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhd53uWikOvNip_m0Z6tXGje2gkBZNLYdep6wMEMcAxRAYI1ajzQBvJK0hDZQBxqAKdhcbX2CcVLvHBVhkCt5Y9bvB2XohIJTWSdB-lHIFrgbmUF1ViQMP5_F03_cYe-cZ2hmA94iS2SYTWezedZUlQjMlBpkHYZPPu8IxBasU2MuNoWZscVjbnw-I8lHoJ8jD3gfrE2aBj-hksvY-MGPW4BXV0YhfQQhQ4UE-9lUbY52yaSbxIA3hlXrtQB1cWpf5FI86pGSCW4Vw">
+</div>
+</div>
+<h1 class="font-display-lg text-[24px] leading-[32px] font-extrabold text-primary tracking-tight">Muscle Money</h1>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary dark:text-primary-fixed hover:bg-surface-variant/50 transition-colors duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow px-container-margin py-section-gap pb-32 max-w-3xl mx-auto w-full">
+<!-- Hero / Section Header -->
+<section class="mb-8 relative rounded-2xl overflow-hidden glass-panel p-6 flex flex-col items-start gap-4">
+<div class="absolute inset-0 bg-gradient-to-br from-primary-container/20 to-transparent pointer-events-none"></div>
+<div class="relative z-10">
+<p class="font-label-caps text-label-caps text-primary tracking-widest uppercase mb-1">Academy</p>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Build Your Wealth Engine</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">Master the mechanics of money. Level up your financial stats and unlock new investment strategies.</p>
+</div>
+<!-- Global Progress Mini-Stat -->
+<div class="relative z-10 flex items-center gap-3 mt-2 bg-surface-container-high px-4 py-2 rounded-full border border-outline-variant/50">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-kpi-stat text-kpi-stat text-on-surface text-lg">Lvl 12</span>
+<div class="w-px h-4 bg-outline-variant mx-1"></div>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm">450 / 1000 XP</span>
+</div>
+</section>
+<!-- Segmented Tabs -->
+<div class="flex p-1 bg-surface-container-high rounded-full mb-8 shadow-inner overflow-x-auto hide-scrollbar">
+<button class="flex-1 py-2 px-4 rounded-full font-label-caps text-label-caps whitespace-nowrap transition-all duration-200 bg-primary-container text-on-primary-container shadow-sm">
+                Foundations
+            </button>
+<button class="flex-1 py-2 px-4 rounded-full font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface whitespace-nowrap transition-all duration-200">
+                Investing
+            </button>
+<button class="flex-1 py-2 px-4 rounded-full font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface whitespace-nowrap transition-all duration-200">
+                Advanced
+            </button>
+</div>
+<!-- Lesson Track List -->
+<div class="flex flex-col gap-4">
+<!-- Card 1: Money Foundations (Unlocked, High Progress) -->
+<article class="relative group rounded-2xl bg-surface-container border border-outline-variant/30 overflow-hidden transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(78,222,163,0.1)] hover:border-primary/30 cursor-pointer flex flex-col sm:flex-row items-center p-4 sm:p-5 gap-5">
+<!-- Icon Area -->
+<div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-gradient-to-br from-primary-container/40 to-surface-container-high flex items-center justify-center border border-primary/20 relative">
+<span class="material-symbols-outlined text-primary text-3xl sm:text-4xl" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+<!-- Circular Progress overlay idea (simplified for HTML/Tailwind) -->
+<svg class="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="46" stroke="#334155" stroke-width="4"></circle>
+<circle class="text-primary transition-all duration-1000 ease-out" cx="50" cy="50" fill="transparent" r="46" stroke="currentColor" stroke-dasharray="289" stroke-dashoffset="57" stroke-linecap="round" stroke-width="4"></circle>
+</svg>
+</div>
+<!-- Content -->
+<div class="flex-grow w-full">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline-lg-mobile text-[20px] leading-[28px] font-bold text-on-surface group-hover:text-primary transition-colors">Money Foundations</h3>
+<span class="font-label-caps text-[10px] bg-primary-container/20 text-primary px-2 py-1 rounded border border-primary/20">4/5 Lessons</span>
+</div>
+<p class="font-body-md text-sm text-on-surface-variant mb-4 sm:mb-3">Master budgeting, emergency funds, and credit scores.</p>
+<!-- Stats Row -->
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 bg-surface-container-highest px-2 py-1 rounded-md border border-outline-variant/50">
+<span class="material-symbols-outlined text-secondary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-xs text-on-surface">+50 XP</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="font-label-caps text-xs">3 min</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 2: Saving Discipline (In Progress) -->
+<article class="relative group rounded-2xl bg-surface-container border border-outline-variant/30 overflow-hidden transition-all duration-300 hover:scale-[1.01] cursor-pointer flex flex-col sm:flex-row items-center p-4 sm:p-5 gap-5">
+<div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-surface-container-highest flex items-center justify-center border border-outline-variant/50 relative">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl sm:text-4xl" style="font-variation-settings: 'FILL' 1;">savings</span>
+<svg class="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="46" stroke="#334155" stroke-width="4"></circle>
+<circle class="text-secondary-fixed-dim transition-all duration-1000 ease-out" cx="50" cy="50" fill="transparent" r="46" stroke="currentColor" stroke-dasharray="289" stroke-dashoffset="230" stroke-linecap="round" stroke-width="4"></circle>
+</svg>
+</div>
+<div class="flex-grow w-full">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline-lg-mobile text-[20px] leading-[28px] font-bold text-on-surface">Saving Discipline</h3>
+<span class="font-label-caps text-[10px] bg-surface-container-highest text-on-surface-variant px-2 py-1 rounded border border-outline-variant/50">1/5 Lessons</span>
+</div>
+<p class="font-body-md text-sm text-on-surface-variant mb-4 sm:mb-3">Automate wealth accumulation and beat lifestyle inflation.</p>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 bg-surface-container-highest px-2 py-1 rounded-md border border-outline-variant/50">
+<span class="material-symbols-outlined text-secondary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-xs text-on-surface">+75 XP</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="font-label-caps text-xs">5 min</span>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label-caps text-label-caps hover:opacity-90 transition-opacity whitespace-nowrap">
+                    Continue
+                </button>
+</article>
+<!-- Card 3: Investing Basics (Locked) -->
+<article class="relative group rounded-2xl bg-surface-container-low border border-outline-variant/20 overflow-hidden opacity-75 flex flex-col sm:flex-row items-center p-4 sm:p-5 gap-5">
+<div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-surface-container flex items-center justify-center border border-outline-variant/30">
+<span class="material-symbols-outlined text-outline text-3xl sm:text-4xl">lock</span>
+</div>
+<div class="flex-grow w-full">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-headline-lg-mobile text-[20px] leading-[28px] font-bold text-on-surface-variant">Investing Basics</h3>
+<span class="font-label-caps text-[10px] text-outline px-2 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">lock</span> Locked
+                        </span>
+</div>
+<p class="font-body-md text-sm text-outline mb-4 sm:mb-3">Complete previous modules to unlock compound interest secrets.</p>
+<div class="flex items-center gap-4 opacity-50">
+<div class="flex items-center gap-1.5 bg-surface-container-highest px-2 py-1 rounded-md border border-outline-variant/50">
+<span class="material-symbols-outlined text-outline text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-caps text-xs text-outline">+100 XP</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="font-label-caps text-xs">8 min</span>
+</div>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden bg-surface dark:bg-surface-container fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-[72px] bg-surface-container dark:bg-surface-container-high shadow-lg pb-safe">
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant/50 transition-transform duration-200 active:scale-95 w-16 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-caps text-[10px] leading-tight">Home</span>
+</a>
+<!-- Active -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-2 transition-transform duration-200 active:scale-95 w-16" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">school</span>
+<span class="font-label-caps text-[10px] leading-tight">Learn</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant/50 transition-transform duration-200 active:scale-95 w-16 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1">insights</span>
+<span class="font-label-caps text-[10px] leading-tight">Simulator</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant/50 transition-transform duration-200 active:scale-95 w-16 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1">account_balance_wallet</span>
+<span class="font-label-caps text-[10px] leading-tight">Wallet</span>
+</a>
+<!-- Inactive -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant/50 transition-transform duration-200 active:scale-95 w-16 rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-caps text-[10px] leading-tight">Profile</span>
+</a>
+</nav>
+<!-- Floating AI Assistant Button (Desktop/Tablet) -->
+<button class="hidden md:flex fixed bottom-8 right-8 w-14 h-14 rounded-full bg-gradient-to-tr from-tertiary-container to-secondary-container text-on-tertiary-container shadow-2xl items-center justify-center hover:scale-105 transition-transform z-50 glass-panel border-none">
+<span class="material-symbols-outlined text-3xl">smart_toy</span>
+</button>
+</body></html>

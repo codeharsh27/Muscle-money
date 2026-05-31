@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  api:
+    name: API checks
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: muscle_money
+          POSTGRES_PASSWORD: muscle_money
+          POSTGRES_DB: muscle_money
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U muscle_money -d muscle_money"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    env:
+      DATABASE_URL: postgresql://muscle_money:muscle_money@localhost:5432/muscle_money?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-access-secret-must-be-at-least-32-chars
+      JWT_REFRESH_SECRET: ci-refresh-secret-must-be-at-least-32-chars
+      CORS_ORIGINS: http://localhost:3000
+      AI_SERVICE_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm --workspace @muscle-money/api run prisma:generate
+      - run: npm --workspace @muscle-money/api run typecheck
+      - run: npm --workspace @muscle-money/api run build
+
+  ai-service:
+    name: AI service checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install fastapi "uvicorn[standard]" pydantic-settings google-generativeai
+      - run: python -m compileall apps/ai-service/app
+
+  mobile:
+    name: Flutter static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - working-directory: apps/mobile
+        run: flutter pub get
+      - working-directory: apps/mobile
+        run: flutter analyze

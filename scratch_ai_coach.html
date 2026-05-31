@@ -1,0 +1,284 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AI Finance Coach Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-error": "#690005",
+                        "primary": "#4edea3",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "background": "#0e1511",
+                        "surface-tint": "#4edea3",
+                        "surface-variant": "#2f3632",
+                        "on-secondary": "#002e6a",
+                        "inverse-primary": "#006c49",
+                        "surface": "#0e1511",
+                        "on-tertiary-container": "#4600a7",
+                        "outline-variant": "#3c4a42",
+                        "tertiary-fixed": "#e9ddff",
+                        "on-secondary-container": "#e6ecff",
+                        "tertiary": "#d0bcff",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-container-lowest": "#09100c",
+                        "on-tertiary-fixed": "#23005c",
+                        "on-surface-variant": "#bbcabf",
+                        "on-primary-container": "#00422b",
+                        "surface-container-high": "#242c27",
+                        "outline": "#86948a",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#3c0091",
+                        "secondary-container": "#0566d9",
+                        "primary-fixed": "#6ffbbe",
+                        "primary-fixed-dim": "#4edea3",
+                        "on-primary-fixed": "#002113",
+                        "surface-dim": "#0e1511",
+                        "secondary": "#adc6ff",
+                        "tertiary-fixed-dim": "#d0bcff",
+                        "error": "#ffb4ab",
+                        "surface-bright": "#343b36",
+                        "primary-container": "#10b981",
+                        "tertiary-container": "#b090ff",
+                        "on-secondary-fixed": "#001a42",
+                        "on-secondary-fixed-variant": "#004395",
+                        "on-primary-fixed-variant": "#005236",
+                        "on-tertiary-fixed-variant": "#5516be",
+                        "inverse-on-surface": "#2b322d",
+                        "error-container": "#93000a",
+                        "on-primary": "#003824",
+                        "on-surface": "#dde4dd",
+                        "surface-container-highest": "#2f3632",
+                        "inverse-surface": "#dde4dd",
+                        "surface-container": "#1a211d",
+                        "on-background": "#dde4dd",
+                        "surface-container-low": "#161d19"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "16px",
+                        "container-margin": "20px",
+                        "base": "8px",
+                        "section-gap": "32px"
+                    },
+                    fontFamily: {
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-caps": ["JetBrains Mono"],
+                        "kpi-stat": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "headline-lg-mobile": ["28px", { lineHeight: "36px", fontWeight: "700" }],
+                        "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "kpi-stat": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700" }],
+                        "display-lg": ["40px", { lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "800" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0e1511; /* fallback background */
+        }
+        /* Custom scrollbar for chat area */
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background-color: #2f3632;
+            border-radius: 4px;
+        }
+        
+        .chat-bubble-coach {
+            background: linear-gradient(145deg, #1E293B 0%, #0F172A 100%);
+            border: 1px solid #334155;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            border-radius: 16px 16px 16px 4px;
+        }
+        
+        .chat-bubble-user {
+            background: linear-gradient(135deg, #4edea3 0%, #10b981 100%);
+            color: #002113;
+            border-radius: 16px 16px 4px 16px;
+        }
+        
+        .glass-panel {
+            background: rgba(47, 54, 50, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(134, 148, 138, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden relative">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-md flex justify-between items-center px-container-margin py-4 w-full z-50 fixed top-0 left-0 transition-all duration-200">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant overflow-hidden">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A close up, high quality studio portrait photograph of a young person smiling lightly. The lighting is soft and flattering, creating a modern, approachable feel against a dark background, matching a sleek corporate minimalist app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_R09WIYtLNNYIShM0CTgf8VYoCnkQq-xWN5KONOB4nyfOFAtN4W6dGGyRL9qAD5NVNkJDGFNMbfnycua3vUQE_ZCiPbPaKk5LJC-t-NQw31sM1q9-C5YIBPviFShqCB8Hz4W9_32VJqYQYHBywUM0xWNjy1181LIHaTj78v2k0GlEFNU5zTolaw6qfYGrOzOnhwkTk1JkaVc6DUJLvGnvGtBDlI5wqvKHoGGUcCZaHf88q8Kgxl9AtKrYOYoRykyKI8otr9CdPYSO">
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold text-primary">Muscle Money</h1>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary border border-outline-variant hover:opacity-80 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Chat Canvas -->
+<main class="flex-1 flex flex-col mt-[72px] mb-[180px] overflow-hidden relative z-10 px-container-margin">
+<!-- Chat History Scroll Area -->
+<div class="flex-1 overflow-y-auto chat-scroll py-section-gap flex flex-col gap-6">
+<!-- Date Divider -->
+<div class="flex justify-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant bg-surface-container px-4 py-1 rounded-full border border-outline-variant">Today</span>
+</div>
+<!-- Coach Message 1 -->
+<div class="flex gap-4 max-w-[90%]">
+<div class="w-10 h-10 shrink-0 rounded-full bg-secondary-container flex items-center justify-center border border-outline-variant shadow-[0_0_15px_rgba(5,102,217,0.3)]">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="chat-bubble-coach p-4">
+<p class="font-body-md text-body-md text-on-surface mb-2">Great job on that quiz, Alex! 🎯</p>
+<p class="font-body-md text-body-md text-on-surface">Want to know how compound interest affects your Laptop Fund?</p>
+</div>
+</div>
+<!-- User Message 1 -->
+<div class="flex gap-4 max-w-[90%] self-end">
+<div class="chat-bubble-user p-4">
+<p class="font-body-md text-body-md font-semibold">Yes, show me!</p>
+</div>
+</div>
+<!-- Coach Message 2 (with visualization snippet) -->
+<div class="flex gap-4 max-w-[95%] md:max-w-[80%]">
+<div class="w-10 h-10 shrink-0 rounded-full bg-secondary-container flex items-center justify-center border border-outline-variant shadow-[0_0_15px_rgba(5,102,217,0.3)]">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="chat-bubble-coach p-4 flex flex-col gap-4 w-full">
+<p class="font-body-md text-body-md text-on-surface">Here's how your $500 grows over time if you keep adding $50/month with a 5% return. It's like a snowball rolling down a hill!</p>
+<!-- Finance Snippet Card inside Chat -->
+<div class="bg-surface-container rounded-xl p-4 border border-outline-variant">
+<div class="flex justify-between items-center mb-4">
+<div>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant">LAPTOP FUND PROJECTION</h3>
+<div class="font-kpi-stat text-kpi-stat text-primary mt-1">$1,254.30</div>
+</div>
+<div class="w-12 h-12 rounded-full border-4 border-surface-variant border-t-primary flex items-center justify-center transform -rotate-45">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="trending_up">trending_up</span>
+</div>
+</div>
+<!-- Mini Chart Representation -->
+<div class="h-24 w-full flex items-end gap-1 px-1 relative">
+<!-- Background gradient for chart area -->
+<div class="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent rounded-b-lg"></div>
+<!-- Bars -->
+<div class="w-full bg-primary/30 rounded-t-sm h-[30%] relative z-10 hover:bg-primary transition-colors"></div>
+<div class="w-full bg-primary/40 rounded-t-sm h-[40%] relative z-10 hover:bg-primary transition-colors"></div>
+<div class="w-full bg-primary/50 rounded-t-sm h-[52%] relative z-10 hover:bg-primary transition-colors"></div>
+<div class="w-full bg-primary/60 rounded-t-sm h-[65%] relative z-10 hover:bg-primary transition-colors"></div>
+<div class="w-full bg-primary/70 rounded-t-sm h-[80%] relative z-10 hover:bg-primary transition-colors"></div>
+<div class="w-full bg-primary rounded-t-sm h-[100%] relative z-10 shadow-[0_0_10px_rgba(78,222,163,0.5)]"></div>
+</div>
+<div class="flex justify-between mt-2 font-label-caps text-label-caps text-on-surface-variant text-[10px]">
+<span>Now</span>
+<span>12 mo</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Typing indicator -->
+<div class="flex gap-4 max-w-[90%] opacity-70">
+<div class="w-8 h-8 shrink-0 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-3 flex gap-1 items-center">
+<div class="w-2 h-2 bg-on-surface-variant rounded-full animate-bounce"></div>
+<div class="w-2 h-2 bg-on-surface-variant rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+<div class="w-2 h-2 bg-on-surface-variant rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Input & Suggestions Area -->
+<div class="fixed bottom-[72px] left-0 w-full glass-panel z-40 pb-4 pt-3 flex flex-col gap-3">
+<!-- Suggestion Chips (Horizontal Scroll) -->
+<div class="w-full overflow-x-auto px-container-margin pb-2 hide-scrollbar flex gap-2 snap-x">
+<button class="snap-start shrink-0 px-4 py-2 rounded-full border border-primary/40 bg-surface/80 text-primary font-label-caps text-label-caps hover:bg-primary/10 transition-colors whitespace-nowrap flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="school">school</span>
+                Explain Compound Interest
+            </button>
+<button class="snap-start shrink-0 px-4 py-2 rounded-full border border-outline-variant bg-surface/80 text-on-surface font-label-caps text-label-caps hover:bg-surface-variant transition-colors whitespace-nowrap flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="donut_large">donut_large</span>
+                Check my progress
+            </button>
+<button class="snap-start shrink-0 px-4 py-2 rounded-full border border-outline-variant bg-surface/80 text-on-surface font-label-caps text-label-caps hover:bg-surface-variant transition-colors whitespace-nowrap flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="help">help</span>
+                What's a Dividend?
+            </button>
+</div>
+<!-- Message Input -->
+<div class="px-container-margin">
+<div class="relative flex items-center bg-surface-container-high rounded-full border border-outline-variant p-1 shadow-lg">
+<input class="w-full bg-transparent border-none text-on-surface font-body-md text-body-md focus:ring-0 px-4 placeholder:text-on-surface-variant/50" placeholder="Ask your finance coach..." type="text">
+<button class="w-10 h-10 shrink-0 rounded-full bg-gradient-to-r from-primary to-primary-fixed flex items-center justify-center text-on-primary-fixed shadow-[0_0_15px_rgba(78,222,163,0.3)] hover:scale-105 transition-transform">
+<span class="material-symbols-outlined" data-icon="send" data-weight="fill">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-[72px] bg-surface-container dark:bg-surface-container-high border-t border-outline-variant shadow-lg md:hidden rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant/50 transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl p-2 transition-transform duration-200 active:scale-95 shadow-[0_0_10px_rgba(16,185,129,0.2)]" href="#">
+<span class="material-symbols-outlined" data-icon="school" data-weight="fill">school</span>
+<span class="font-label-caps text-label-caps mt-1">Learn</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant/50 transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-label-caps text-label-caps mt-1">Simulator</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant/50 transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-caps text-label-caps mt-1">Wallet</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-variant/50 transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps mt-1">Profile</span>
+</a>
+</nav>
+<style>
+        /* Utility to hide scrollbar for suggestion chips */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body></html>

@@ -29,11 +29,17 @@ class DashboardScreen extends ConsumerWidget {
         elevation: 0,
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
-              child: Text(
-                _initialFor(user?.fullName),
-                style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
+            GestureDetector(
+              onTap: () => context.push('/profile'),
+              child: Hero(
+                tag: 'profile_avatar',
+                child: CircleAvatar(
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.2),
+                  child: Text(
+                    _initialFor(user?.fullName),
+                    style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -96,7 +102,7 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 32),
 
                     // Habit Progress Graph
-                    const _HabitProgressGraph(),
+                    _HabitProgressGraph(progressHistory: data.progressHistory),
                     const SizedBox(height: 32),
                     
                     // Learn Concept Card
@@ -239,7 +245,8 @@ class _DailyMotivation extends StatelessWidget {
 // ---------------------------------------------------------
 
 class _HabitProgressGraph extends StatelessWidget {
-  const _HabitProgressGraph();
+  final List<int> progressHistory;
+  const _HabitProgressGraph({required this.progressHistory});
 
   @override
   Widget build(BuildContext context) {
@@ -275,15 +282,10 @@ class _HabitProgressGraph extends StatelessWidget {
               borderData: FlBorderData(show: false),
               lineBarsData: [
                 LineChartBarData(
-                  spots: const [
-                    FlSpot(0, 20),
-                    FlSpot(1, 35),
-                    FlSpot(2, 30),
-                    FlSpot(3, 50),
-                    FlSpot(4, 45),
-                    FlSpot(5, 70),
-                    FlSpot(6, 85),
-                  ],
+                  spots: List.generate(
+                    progressHistory.length,
+                    (i) => FlSpot(i.toDouble(), progressHistory[i].toDouble()),
+                  ),
                   isCurved: true,
                   color: Colors.greenAccent,
                   barWidth: 3,

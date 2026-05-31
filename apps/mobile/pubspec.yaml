@@ -22,6 +22,8 @@ dependencies:
   google_fonts: ^6.3.2
   speech_to_text: ^7.4.0
   notification_listener_service: ^0.3.5
+  supabase_flutter: ^2.12.4
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:

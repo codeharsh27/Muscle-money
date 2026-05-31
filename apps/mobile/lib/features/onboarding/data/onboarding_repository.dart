@@ -1,30 +1,46 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/network/api_client.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 final onboardingRepositoryProvider = Provider<OnboardingRepository>((ref) {
-  return OnboardingRepository(ref.watch(dioProvider));
+  return OnboardingRepository(supabase.Supabase.instance.client);
 });
 
 class OnboardingRepository {
-  OnboardingRepository(this._dio);
+  OnboardingRepository(this._supabase);
 
-  final Dio _dio;
+  final supabase.SupabaseClient _supabase;
 
   Future<OnboardingStatus> status() async {
-    final response = await _dio.get<Map<String, dynamic>>('/onboarding/status');
-    final data = (response.data ?? <String, dynamic>{})['data'] as Map<String, dynamic>;
-    return OnboardingStatus.fromJson(data);
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      return const OnboardingStatus(completed: false, missingFields: ['auth']);
+    }
+    
+    final metadata = user.userMetadata ?? {};
+    final isCompleted = metadata['onboarding_completed'] == true;
+    
+    return OnboardingStatus(
+      completed: isCompleted,
+      missingFields: isCompleted ? [] : ['financialGoals', 'monthlyIncomeMinor'],
+    );
   }
 
   Future<OnboardingStatus> complete(OnboardingPayload payload) async {
-    final response = await _dio.put<Map<String, dynamic>>(
-      '/onboarding/complete',
-      data: payload.toJson(),
+    final user = _supabase.auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    final currentMetadata = user.userMetadata ?? {};
+    final updatedMetadata = {
+      ...currentMetadata,
+      ...payload.toJson(),
+      'onboarding_completed': true,
+    };
+
+    await _supabase.auth.updateUser(
+      supabase.UserAttributes(data: updatedMetadata),
     );
-    final data = (response.data ?? <String, dynamic>{})['data'] as Map<String, dynamic>;
-    return OnboardingStatus.fromJson(data);
+
+    return const OnboardingStatus(completed: true, missingFields: []);
   }
 }
 
@@ -33,15 +49,6 @@ class OnboardingStatus {
 
   final bool completed;
   final List<String> missingFields;
-
-  factory OnboardingStatus.fromJson(Map<String, dynamic> json) {
-    return OnboardingStatus(
-      completed: json['completed'] as bool,
-      missingFields: (json['missingFields'] as List<dynamic>? ?? const [])
-          .map((item) => item as String)
-          .toList(),
-    );
-  }
 }
 
 class OnboardingPayload {

@@ -1,5 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../core/config/app_config.dart';
 import '../data/auth_repository.dart';
@@ -44,15 +44,8 @@ class AuthController extends AsyncNotifier<AuthUser?> {
   }
 
   String errorMessage(Object error) {
-    if (error is DioException) {
-      final body = error.response?.data;
-      if (body is Map<String, dynamic>) {
-        final errorBody = body['error'];
-        if (errorBody is Map<String, dynamic> && errorBody['message'] is String) {
-          return errorBody['message'] as String;
-        }
-      }
-      return 'Unable to reach Muscle Money. Check your connection and try again.';
+    if (error is supabase.AuthException) {
+      return error.message;
     }
     return 'Something went wrong. Please try again.';
   }

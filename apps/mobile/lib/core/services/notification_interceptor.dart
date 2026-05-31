@@ -3,74 +3,108 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notification_listener_service/notification_event.dart';
 import 'package:notification_listener_service/notification_listener_service.dart';
 
+import '../../features/wallet/data/wallet_repository.dart';
+
 final notificationInterceptorProvider = Provider<NotificationInterceptor>((ref) {
-  return NotificationInterceptor();
+  return NotificationInterceptor(ref);
 });
 
 class NotificationInterceptor {
+  final Ref ref;
   StreamSubscription<ServiceNotificationEvent>? _subscription;
   
-  // Callback when a spending notification is detected
+  // Optional callback for UI updates
   Function(double amount, String merchant, String platform)? onSpendingDetected;
 
+  NotificationInterceptor(this.ref);
+
   Future<bool> isPermissionGranted() async {
-    return await NotificationListenerService.isPermissionGranted();
+    try {
+      return await NotificationListenerService.isPermissionGranted();
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> requestPermission() async {
-    await NotificationListenerService.requestPermission();
+    try {
+      await NotificationListenerService.requestPermission();
+    } catch (e) {
+      // Ignore
+    }
   }
 
   void startListening() {
+    if (_subscription != null) return; // already listening
+
     _subscription = NotificationListenerService.notificationsStream.listen((event) {
-      if (event.packageName == null || event.title == null || event.content == null) return;
+      if (event.packageName == null) return;
       
       final packageName = event.packageName!.toLowerCase();
-      final title = event.title!.toLowerCase();
-      final content = event.content!.toLowerCase();
+      final title = (event.title ?? '').toLowerCase();
+      final content = (event.content ?? '').toLowerCase();
+      final fullText = '$title $content';
 
       // Check for UPI apps
-      bool isUpiApp = packageName.contains('com.phonepe.app') || 
-                      packageName.contains('com.google.android.apps.nbu.paisa.user') ||
-                      packageName.contains('net.one97.paytm');
+      bool isPhonePe = packageName.contains('com.phonepe.app');
+      bool isGPay = packageName.contains('com.google.android.apps.nbu.paisa.user');
+      bool isPaytm = packageName.contains('net.one97.paytm');
 
-      if (!isUpiApp) return;
+      if (!isPhonePe && !isGPay && !isPaytm) return;
 
-      // Simple regex to extract amount like "Paid ₹500" or "Rs. 500"
-      if (title.contains('paid') || content.contains('paid') || 
-          title.contains('sent') || content.contains('sent') ||
-          title.contains('successful')) {
-          
-          final RegExp regExp = RegExp(r'(?:₹|rs\.?|inr)\s*(\d+(?:\.\d+)?)', caseSensitive: false);
-          final match = regExp.firstMatch(title) ?? regExp.firstMatch(content);
-          
-          if (match != null) {
-             final amountStr = match.group(1);
-             if (amountStr != null) {
-                final amount = double.tryParse(amountStr);
-                if (amount != null && amount > 0) {
-                    String merchant = "Unknown";
-                    if (content.contains(" to ")) {
-                        final parts = content.split(" to ");
-                        if (parts.length > 1) {
-                            merchant = parts[1].split(RegExp(r'[^a-zA-Z\s]')).first.trim();
-                        }
+      // Ensure it's a payment outgoing notification
+      if (!fullText.contains('paid') && !fullText.contains('sent') && !fullText.contains('debited')) return;
+      if (fullText.contains('received') || fullText.contains('requested') || fullText.contains('failed')) return;
+
+      // Extract Amount
+      final RegExp amountRegExp = RegExp(r'(?:₹|rs\.?|inr)\s*(\d+(?:\.\d+)?)', caseSensitive: false);
+      final match = amountRegExp.firstMatch(fullText);
+      
+      if (match != null) {
+         final amountStr = match.group(1);
+         if (amountStr != null) {
+            final amount = double.tryParse(amountStr);
+            if (amount != null && amount > 0) {
+                // Extract Merchant
+                String merchant = "Unknown";
+                
+                if (isPhonePe && title.contains('paid to')) {
+                    merchant = title.replaceAll('paid to', '').trim();
+                } else if (isGPay && fullText.contains('paid ')) {
+                    final split = fullText.split('to ');
+                    if (split.length > 1) {
+                        merchant = split[1].split('₹').first.trim();
                     }
-
-                    String platform = "UPI";
-                    if (packageName.contains('phonepe')) platform = "PhonePe";
-                    else if (packageName.contains('nbu.paisa')) platform = "GPay";
-                    else if (packageName.contains('paytm')) platform = "Paytm";
-
-                    onSpendingDetected?.call(amount, merchant, platform);
+                } else if (isPaytm && title.contains('paid ₹')) {
+                     final split = title.split('to ');
+                     if (split.length > 1) merchant = split[1].trim();
                 }
-             }
-          }
+
+                // Clean up merchant name
+                merchant = merchant.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), '').trim();
+                if (merchant.isEmpty) merchant = "Merchant";
+
+                String platform = isPhonePe ? "PhonePe" : isGPay ? "GPay" : "Paytm";
+
+                // Auto-log to backend
+                final amountMinor = (amount * 100).toInt();
+                ref.read(walletRepositoryProvider).addSpending(
+                   amountMinor,
+                   platform,
+                   merchant: merchant,
+                   category: 'Auto-Tracked',
+                ).catchError((_) {}); // Fire and forget
+
+                onSpendingDetected?.call(amount, merchant, platform);
+            }
+         }
       }
     });
   }
 
   void stopListening() {
-    _subscription?.cancel();
+    // Keep listening in background, do not cancel unless forced.
+    // _subscription?.cancel();
+    // _subscription = null;
   }
 }

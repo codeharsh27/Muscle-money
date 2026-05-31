@@ -35,7 +35,10 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   void _startListening(NotificationInterceptor interceptor) {
     interceptor.onSpendingDetected = (amount, merchant, platform) {
       if (mounted) {
-        _showSpendingDialog(context, amount, merchant, platform);
+        ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Auto-tracked ₹$amount spent on $platform ($merchant)')),
+        );
+        _refresh(); // Automatically refresh the wallet to show the new spending
       }
     };
     interceptor.startListening();

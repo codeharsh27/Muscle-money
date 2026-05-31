@@ -1,7 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/config/app_config.dart';
 import '../presentation/app_shell.dart';
 import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
@@ -10,6 +10,9 @@ import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/learning/presentation/learning_screen.dart';
 import '../../features/onboarding/presentation/onboarding_controller.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/profile/presentation/personal_info_screen.dart';
+import '../../features/profile/presentation/settings_screens.dart';
 import '../../features/simulator/presentation/simulator_screen.dart';
 import '../../features/wallet/presentation/wallet_screen.dart';
 
@@ -19,36 +22,45 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final isAuthenticated = authState.valueOrNull != null;
 
   return GoRouter(
-    initialLocation: '/dashboard',
+    initialLocation: '/splash',
     redirect: (context, state) {
-      return null;
-
       final location = state.matchedLocation;
       final authLoading = authState.isLoading;
-      if (authLoading) return null;
+      final onboardingLoading = onboardingState.isLoading;
+
+      if (authLoading || (isAuthenticated && onboardingLoading)) {
+        return location == '/splash' ? null : '/splash';
+      }
 
       final isAuthRoute = location == '/sign-in' || location == '/sign-up';
+
       if (!isAuthenticated && !isAuthRoute) {
         return '/sign-in';
       }
-      if (isAuthenticated && isAuthRoute) {
-        return '/onboarding';
-      }
-      if (isAuthenticated && location == '/dashboard') {
+
+      if (isAuthenticated) {
         final status = onboardingState.valueOrNull;
-        if (status != null && !status.completed) {
+        final isCompleted = status?.completed ?? false;
+
+        if (!isCompleted && location != '/onboarding') {
           return '/onboarding';
         }
-      }
-      if (isAuthenticated && location == '/onboarding') {
-        final status = onboardingState.valueOrNull;
-        if (status != null && status.completed) {
+
+        if (isCompleted && (location == '/splash' || location == '/onboarding' || isAuthRoute)) {
           return '/dashboard';
         }
       }
+
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const Scaffold(
+          backgroundColor: Color(0xFF0F111A),
+          body: Center(child: CircularProgressIndicator(color: Colors.greenAccent)),
+        ),
+      ),
       GoRoute(
         path: '/sign-in',
         builder: (context, state) => const SignInScreen(),
@@ -60,6 +72,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile/personal-info',
+        builder: (context, state) => const PersonalInfoScreen(),
+      ),
+      GoRoute(
+        path: '/profile/notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/privacy',
+        builder: (context, state) => const PrivacySecurityScreen(),
+      ),
+      GoRoute(
+        path: '/profile/help',
+        builder: (context, state) => const HelpAboutScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

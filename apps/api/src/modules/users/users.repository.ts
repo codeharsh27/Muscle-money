@@ -31,4 +31,29 @@ export class UsersRepository {
       },
     });
   }
+
+  async getUserProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true },
+    });
+    return user;
+  }
+
+  async updateProfile(userId: string, data: any) {
+    const { fullName, ...profileData } = data;
+    
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(fullName ? { fullName } : {}),
+        profile: {
+          update: {
+            ...profileData
+          }
+        }
+      },
+      include: { profile: true }
+    });
+  }
 }

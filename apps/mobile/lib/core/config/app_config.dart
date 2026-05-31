@@ -4,5 +4,15 @@ class AppConfig {
     defaultValue: 'http://192.168.1.3:3000/api/v1',
   );
 
+  static const supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://ywaxvsqpofnkwxdwhpdl.supabase.co',
+  );
+
+  static const supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3YXh2c3Fwb2Zua3d4ZHdocGRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDA1NDksImV4cCI6MjA5NTgxNjU0OX0.b7KAeSjYWybBCK84Q94NgOfV4MDhWFykbnErhjKQq64',
+  );
+
   static const skipAuth = bool.fromEnvironment('SKIP_AUTH', defaultValue: false);
 }

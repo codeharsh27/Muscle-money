@@ -1,32 +1,24 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/network/api_client.dart';
-import '../../../core/storage/secure_token_store.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(ref.watch(dioProvider), ref.watch(secureTokenStoreProvider));
+  return AuthRepository(supabase.Supabase.instance.client);
 });
 
 class AuthRepository {
-  AuthRepository(this._dio, this._tokenStore);
+  AuthRepository(this._supabase);
 
-  final Dio _dio;
-  final SecureTokenStore _tokenStore;
+  final supabase.SupabaseClient _supabase;
 
   Future<AuthUser> signIn({required String email, required String password}) async {
-    final response = await _dio.post<Map<String, dynamic>>(
-      '/auth/login',
-      data: {'email': email, 'password': password},
+    final response = await _supabase.auth.signInWithPassword(
+      email: email,
+      password: password,
     );
-    final envelope = response.data ?? <String, dynamic>{};
-    final data = envelope['data'] as Map<String, dynamic>;
-    final tokens = data['tokens'] as Map<String, dynamic>;
-    await _tokenStore.saveTokens(
-      accessToken: tokens['accessToken'] as String,
-      refreshToken: tokens['refreshToken'] as String,
-    );
-    return AuthUser.fromJson(data['user'] as Map<String, dynamic>);
+    if (response.user == null) {
+      throw Exception('Login failed');
+    }
+    return AuthUser.fromSupabase(response.user!);
   }
 
   Future<AuthUser> signUp({
@@ -34,44 +26,36 @@ class AuthRepository {
     required String fullName,
     required String password,
   }) async {
-    final response = await _dio.post<Map<String, dynamic>>(
-      '/auth/register',
-      data: {'email': email, 'fullName': fullName, 'password': password},
+    final response = await _supabase.auth.signUp(
+      email: email,
+      password: password,
+      data: {'full_name': fullName},
     );
-    final envelope = response.data ?? <String, dynamic>{};
-    final data = envelope['data'] as Map<String, dynamic>;
-    final tokens = data['tokens'] as Map<String, dynamic>;
-    await _tokenStore.saveTokens(
-      accessToken: tokens['accessToken'] as String,
-      refreshToken: tokens['refreshToken'] as String,
-    );
-    return AuthUser.fromJson(data['user'] as Map<String, dynamic>);
+    if (response.user == null) {
+      throw Exception('Signup failed');
+    }
+    return AuthUser.fromSupabase(response.user!);
   }
 
   Future<AuthUser> startDemoSession() async {
-    final response = await _dio.post<Map<String, dynamic>>('/auth/dev-demo');
-    final envelope = response.data ?? <String, dynamic>{};
-    final data = envelope['data'] as Map<String, dynamic>;
-    final tokens = data['tokens'] as Map<String, dynamic>;
-    await _tokenStore.saveTokens(
-      accessToken: tokens['accessToken'] as String,
-      refreshToken: tokens['refreshToken'] as String,
+    // Demo session is not standard in Supabase, but we can simulate it if needed,
+    // or just return a dummy user for now if SKIP_AUTH is true.
+    return const AuthUser(
+      id: 'demo-id',
+      email: 'demo@musclemoney.app',
+      fullName: 'Demo User',
+      role: 'USER',
+      status: 'ACTIVE',
     );
-    return AuthUser.fromJson(data['user'] as Map<String, dynamic>);
   }
 
   Future<AuthUser?> currentUser() async {
-    final token = await _tokenStore.readAccessToken();
-    if (token == null) {
-      return null;
-    }
-    final response = await _dio.get<Map<String, dynamic>>('/auth/me');
-    final envelope = response.data ?? <String, dynamic>{};
-    final data = envelope['data'] as Map<String, dynamic>;
-    return AuthUser.fromJson(data['user'] as Map<String, dynamic>);
+    final user = _supabase.auth.currentUser;
+    if (user == null) return null;
+    return AuthUser.fromSupabase(user);
   }
 
-  Future<void> signOut() => _tokenStore.clear();
+  Future<void> signOut() => _supabase.auth.signOut();
 }
 
 class AuthUser {
@@ -91,14 +75,15 @@ class AuthUser {
   final String status;
   final String? emailVerifiedAt;
 
-  factory AuthUser.fromJson(Map<String, dynamic> json) {
+  factory AuthUser.fromSupabase(supabase.User user) {
+    final metadata = user.userMetadata ?? {};
     return AuthUser(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      fullName: json['fullName'] as String,
-      role: json['role'] as String,
-      status: json['status'] as String,
-      emailVerifiedAt: json['emailVerifiedAt'] as String?,
+      id: user.id,
+      email: user.email ?? '',
+      fullName: metadata['full_name'] as String? ?? 'User',
+      role: 'USER', // Supabase roles are handled via RLS or custom claims
+      status: 'ACTIVE',
+      emailVerifiedAt: user.emailConfirmedAt,
     );
   }
 }

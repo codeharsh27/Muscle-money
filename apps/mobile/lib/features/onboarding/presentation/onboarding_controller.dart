@@ -1,5 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../data/onboarding_repository.dart';
 
@@ -23,9 +23,9 @@ class OnboardingController extends AsyncNotifier<OnboardingStatus?> {
   }
 
   String errorMessage(Object error) {
-    if (error is DioException) {
-      return 'Unable to save onboarding. Please review your answers and try again.';
+    if (error is supabase.AuthException) {
+      return error.message;
     }
-    return 'Something went wrong. Please try again.';
+    return 'Error: ${error.toString()}';
   }
 }

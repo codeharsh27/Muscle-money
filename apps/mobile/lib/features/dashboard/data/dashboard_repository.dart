@@ -42,6 +42,7 @@ class DashboardSummary {
     required this.quizAccuracyPercent,
     required this.lessonsStarted,
     required this.lessonsCompleted,
+    this.progressHistory = const [],
     this.health,
     this.goals = const [],
     this.smartAction,
@@ -64,6 +65,7 @@ class DashboardSummary {
   final int quizAccuracyPercent;
   final int lessonsStarted;
   final int lessonsCompleted;
+  final List<int> progressHistory;
   final HealthSummary? health;
   final List<DashboardGoal> goals;
   final DashboardSmartAction? smartAction;
@@ -100,6 +102,7 @@ class DashboardSummary {
       quizAccuracyPercent: learning['quizAccuracyPercent'] as int,
       lessonsStarted: learning['lessonsStarted'] as int,
       lessonsCompleted: learning['lessonsCompleted'] as int,
+      progressHistory: (learning['progressHistory'] as List<dynamic>?)?.map((e) => e as int).toList() ?? [0,0,0,0,0,0,0],
       health: health != null ? HealthSummary.fromJson(health) : null,
       goals: goalsJson.map((g) => DashboardGoal.fromJson(g as Map<String, dynamic>)).toList(),
       smartAction: smartActionJson != null ? DashboardSmartAction.fromJson(smartActionJson) : null,

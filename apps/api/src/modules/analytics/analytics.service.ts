@@ -3,7 +3,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { LearningService } from '../learning/learning.service';
 import { AiService } from '../ai/ai.service';
-import { startOfMonth, startOfWeek } from 'date-fns';
+
 
 @Injectable()
 export class AnalyticsService {
@@ -126,7 +126,7 @@ export class AnalyticsService {
       monthlyIncomeMinor,
       monthlySavingsMinor,
       simulatorEquityMinor: simulatorAccount?.ledger.reduce((total, entry) => total + (entry.direction === 'CREDIT' ? entry.amountMinor : -entry.amountMinor), 0) ?? 0,
-      streakCount: streak?.currentStreak ?? 0,
+      streakCount: streak?.currentCount ?? 0,
     };
     
     const novaInsight = await this.aiService.generateFinancialInsight(aiContext);

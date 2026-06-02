@@ -9,6 +9,7 @@ import 'core/config/app_config.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  await Hive.openBox('settings');
 
   await Supabase.initialize(
     url: AppConfig.supabaseUrl,

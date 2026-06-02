@@ -7,6 +7,7 @@ import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
 import '../../features/auth/presentation/sign_up_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/intro/presentation/intro_screen.dart';
 import '../../features/learning/presentation/learning_screen.dart';
 import '../../features/onboarding/presentation/onboarding_controller.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
@@ -15,6 +16,7 @@ import '../../features/profile/presentation/personal_info_screen.dart';
 import '../../features/profile/presentation/settings_screens.dart';
 import '../../features/simulator/presentation/simulator_screen.dart';
 import '../../features/wallet/presentation/wallet_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authControllerProvider);
@@ -33,8 +35,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       final isAuthRoute = location == '/sign-in' || location == '/sign-up';
+      final isIntroRoute = location == '/intro';
 
-      if (!isAuthenticated && !isAuthRoute) {
+      if (!isAuthenticated && !isAuthRoute && !isIntroRoute) {
+        final box = Hive.box('settings');
+        final hasSeenIntro = box.get('has_seen_intro', defaultValue: false) as bool;
+        
+        if (!hasSeenIntro) {
+          return '/intro';
+        }
         return '/sign-in';
       }
 
@@ -60,6 +69,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           backgroundColor: Color(0xFF0F111A),
           body: Center(child: CircularProgressIndicator(color: Colors.greenAccent)),
         ),
+      ),
+      GoRoute(
+        path: '/intro',
+        builder: (context, state) => const IntroScreen(),
       ),
       GoRoute(
         path: '/sign-in',

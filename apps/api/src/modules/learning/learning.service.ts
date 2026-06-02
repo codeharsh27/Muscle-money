@@ -188,12 +188,20 @@ export class LearningService {
     const knowledgeLevel = profile?.knowledgeLevel ?? 'BEGINNER';
     const firstGoal = profile?.financialGoals[0] ?? 'financial freedom';
     
+    const recentTransactions = await this.prisma.spending.findMany({
+      where: { userId },
+      orderBy: { capturedAt: 'desc' },
+      take: 5,
+    });
+    const txList = recentTransactions.map(tx => `${tx.merchant || tx.note || 'Unknown'} (₹${tx.amountMinor / 100})`).join(', ') || 'None';
+
     const contextStr = `[APP CONTEXT FOR NOVA:
 - User Name: ${name}
 - Knowledge Level: ${knowledgeLevel}
 - Financial Goal: ${firstGoal}
 - Real Wallet Monthly Savings: ₹${(dashboard.wallet.monthlySavingsMinor / 100).toFixed(2)}
 - Real Wallet Monthly Spendings: ₹${((dashboard.wallet as any).monthlySpendingsMinor / 100).toFixed(2)}
+- Recent Transactions: ${txList}
 - Simulator Cash: ₹${(dashboard.simulator.cashMinor / 100).toFixed(2)}
 - Simulator Holdings: ₹${(dashboard.simulator.holdingsValueMinor / 100).toFixed(2)}
 - Learning Progress: Level ${dashboard.learning.level}, ${dashboard.learning.totalXp} XP, ${dashboard.learning.streakCount} day streak

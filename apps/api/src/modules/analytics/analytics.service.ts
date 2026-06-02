@@ -9,7 +9,7 @@ export class AnalyticsService {
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const [
+    let [
       profile,
       externalSavings,
       simulatorAccount,
@@ -47,6 +47,43 @@ export class AnalyticsService {
         orderBy: { capturedAt: 'desc' },
       }),
     ]);
+
+    // Seed dummy spendings if empty (for demo purposes)
+    if (spendings.length === 0) {
+      const dummyTransactions = [
+        { merchant: 'KFC', amount: 45000, desc: 'Dining' },
+        { merchant: 'Amazon', amount: 125000, desc: 'Shopping' },
+        { merchant: 'Uber', amount: 32000, desc: 'Transport' },
+        { merchant: 'Starbucks', amount: 25000, desc: 'Coffee' },
+      ];
+
+      for (const [index, dummy] of dummyTransactions.entries()) {
+        const date = new Date();
+        date.setDate(date.getDate() - index - 1);
+        
+        // Ensure date falls within this month so it shows up in dashboard
+        if (date < firstDayOfMonth) {
+            date.setTime(firstDayOfMonth.getTime() + 86400000);
+        }
+
+        await this.prisma.spending.create({
+          data: {
+            userId,
+            amountMinor: dummy.amount,
+            merchant: dummy.merchant,
+            category: dummy.desc,
+            platform: 'UPI',
+            capturedAt: date,
+          },
+        });
+      }
+
+      // Re-fetch spendings
+      spendings = await this.prisma.spending.findMany({
+        where: { userId, capturedAt: { gte: firstDayOfMonth } },
+        orderBy: { capturedAt: 'desc' },
+      });
+    }
 
     // Calculate external savings and spendings
     const monthlySavingsMinor = externalSavings.reduce((sum, es) => sum + es.amountMinor, 0);

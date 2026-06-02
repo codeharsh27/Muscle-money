@@ -1,7 +1,7 @@
 class AppConfig {
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://192.168.1.3:3000/api/v1',
+    defaultValue: 'http://172.27.181.149:3000/api/v1',
   );
 
   static const supabaseUrl = String.fromEnvironment(

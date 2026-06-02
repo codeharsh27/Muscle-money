@@ -1,9 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import 'auth_controller.dart';
 
@@ -18,6 +16,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _rememberMe = false;
 
   @override
   void dispose() {
@@ -31,9 +30,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       return;
     }
     await ref.read(authControllerProvider.notifier).signIn(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
   }
 
   @override
@@ -45,264 +44,328 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         : null;
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F111A),
-              Color(0xFF1B1429),
-              Color(0xFF071B1A),
-            ],
+      backgroundColor: const Color(0xFF0C0E0A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white70),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              }
+            },
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.white.withValues(alpha: 0.05),
+            ),
           ),
         ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Logo / Icon
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.greenAccent.withValues(alpha: 0.1),
-                      border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3), width: 1.5),
-                    ),
-                    child: const Icon(Icons.bolt_rounded, size: 48, color: Colors.greenAccent),
-                  ).animate().scale(delay: 100.ms, duration: 600.ms, curve: Curves.easeOutBack).fadeIn(),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Headlines
-                  Text(
-                    'Welcome Back',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 40,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
-                      height: 1.1,
-                    ),
-                  ).animate().slideY(begin: 0.3, end: 0, duration: 500.ms, curve: Curves.easeOutCubic).fadeIn(),
-                  
-                  const SizedBox(height: 12),
-                  
-                  Text(
-                    'Sign in to continue your journey to financial discipline.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.spaceGrotesk(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ).animate().slideY(begin: 0.3, end: 0, delay: 100.ms, duration: 500.ms, curve: Curves.easeOutCubic).fadeIn(),
-                  
-                  const SizedBox(height: 48),
-                  
-                  // Glassmorphic Form Card
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(32),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                      child: Container(
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.03),
-                          borderRadius: BorderRadius.circular(32),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 30),
-                          ],
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _CustomTextField(
-                                controller: _emailController,
-                                label: 'Email Address',
-                                icon: Icons.email_outlined,
-                                keyboardType: TextInputType.emailAddress,
-                                textInputAction: TextInputAction.next,
-                                validator: (value) {
-                                  final input = value?.trim() ?? '';
-                                  if (!input.contains('@') || !input.contains('.')) return 'Enter a valid email address';
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                              _CustomTextField(
-                                controller: _passwordController,
-                                label: 'Password',
-                                icon: Icons.lock_outline_rounded,
-                                obscureText: true,
-                                textInputAction: TextInputAction.done,
-                                validator: (value) {
-                                  if ((value ?? '').length < 6) return 'Password must be at least 6 characters';
-                                  return null;
-                                },
-                                onFieldSubmitted: (_) => isLoading ? null : _submit(),
-                              ),
-                              
-                              if (error != null) ...[
-                                const SizedBox(height: 16),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          error, 
-                                          style: GoogleFonts.spaceGrotesk(color: Colors.redAccent, fontWeight: FontWeight.w600),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ).animate().shakeX(duration: 400.ms),
-                              ],
-                              
-                              const SizedBox(height: 32),
-                              
-                              // Submit Button
-                              Container(
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF00FFA3), Color(0xFF00B8FF)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(color: const Color(0xFF00FFA3).withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8)),
-                                  ],
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: isLoading ? null : _submit,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                  ),
-                                  child: isLoading
-                                      ? const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.black87))
-                                      : Text(
-                                          'Sign In',
-                                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87, letterSpacing: 0.5),
-                                        ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ).animate().slideY(begin: 0.1, end: 0, delay: 200.ms, duration: 600.ms, curve: Curves.easeOutCubic).fadeIn(delay: 200.ms),
-                  
-                  const SizedBox(height: 32),
-                  
-                  TextButton(
-                    onPressed: isLoading ? null : () => context.go('/sign-up'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: RichText(
-                      text: TextSpan(
-                        text: "Don't have an account? ",
-                        style: GoogleFonts.spaceGrotesk(color: Colors.white.withValues(alpha: 0.6), fontSize: 15),
-                        children: [
-                          TextSpan(
-                            text: 'Create one',
-                            style: GoogleFonts.spaceGrotesk(color: Colors.greenAccent, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ).animate().fadeIn(delay: 400.ms, duration: 500.ms),
-                ],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: IconButton(
+              icon: const Icon(Icons.lens_blur, color: Colors.white70),
+              onPressed: () {},
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.05),
               ),
             ),
+          )
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Orb Image
+              Center(
+                child: Image.asset(
+                  'assets/images/auth_bg.png',
+                  height: 120,
+                  width: 120,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 120,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFD4FF2A).withValues(alpha: 0.2),
+                          blurRadius: 40,
+                          spreadRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.public, size: 80, color: Color(0xFFD4FF2A)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Headings
+              Text(
+                'Welcome Back!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Sign in to access smart, personalized financial\nplans made for you.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.spaceGrotesk(
+                  color: Colors.white54,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 40),
+
+              // Form
+              if (error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      error,
+                      style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Email Field
+                    Text(
+                      'Email address*',
+                      style: GoogleFonts.spaceGrotesk(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _emailController,
+                      style: const TextStyle(color: Colors.white),
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: _inputDecoration('example@gmail.com'),
+                      validator: (value) {
+                        if (value == null || !value.contains('@')) return 'Invalid email';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Password Field
+                    Text(
+                      'Password*',
+                      style: GoogleFonts.spaceGrotesk(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _passwordController,
+                      style: const TextStyle(color: Colors.white),
+                      obscureText: true,
+                      decoration: _inputDecoration('@Sn123hsn#').copyWith(
+                        suffixIcon: const Icon(Icons.visibility_off, color: Colors.white38),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'Password required';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Remember Me & Forgot Password
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                onChanged: (v) => setState(() => _rememberMe = v ?? false),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                side: const BorderSide(color: Colors.white38),
+                                activeColor: const Color(0xFFD4FF2A),
+                                checkColor: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Remember me',
+                              style: GoogleFonts.spaceGrotesk(color: Colors.white70, fontSize: 14),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            'Forgot Password?',
+                            style: GoogleFonts.spaceGrotesk(color: Colors.white70, fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Sign In Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton.icon(
+                        onPressed: isLoading ? null : _submit,
+                        icon: isLoading 
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                          : const Icon(Icons.auto_awesome, color: Colors.black, size: 20),
+                        label: Text(
+                          isLoading ? 'Signing in...' : 'Sign in',
+                          style: GoogleFonts.outfit(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD4FF2A),
+                          disabledBackgroundColor: const Color(0xFFD4FF2A).withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Or continue with
+              Row(
+                children: [
+                  Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Or continue with',
+                      style: GoogleFonts.spaceGrotesk(color: Colors.white54, fontSize: 12),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.1))),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Social Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.g_mobiledata, color: Colors.white, size: 28),
+                      label: Text('Google', style: GoogleFonts.spaceGrotesk(color: Colors.white)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.apple, color: Colors.white, size: 24),
+                      label: Text('Apple', style: GoogleFonts.spaceGrotesk(color: Colors.white)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+
+              // Sign Up Link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Don't have an account? ",
+                    style: GoogleFonts.spaceGrotesk(color: Colors.white54, fontSize: 14),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.go('/sign-up'),
+                    child: Text(
+                      'Sign up',
+                      style: GoogleFonts.spaceGrotesk(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-}
 
-class _CustomTextField extends StatelessWidget {
-  const _CustomTextField({
-    required this.controller,
-    required this.label,
-    required this.icon,
-    this.obscureText = false,
-    this.keyboardType,
-    this.textInputAction,
-    this.validator,
-    this.onFieldSubmitted,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final IconData icon;
-  final bool obscureText;
-  final TextInputType? keyboardType;
-  final TextInputAction? textInputAction;
-  final String? Function(String?)? validator;
-  final void Function(String)? onFieldSubmitted;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      validator: validator,
-      onFieldSubmitted: onFieldSubmitted,
-      style: GoogleFonts.spaceGrotesk(color: Colors.white, fontSize: 16),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: GoogleFonts.spaceGrotesk(color: Colors.white.withValues(alpha: 0.4), fontSize: 15),
-        filled: true,
-        fillColor: Colors.black.withValues(alpha: 0.3),
-        prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.4)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.greenAccent, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.redAccent.withValues(alpha: 0.5)),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: Colors.white24),
+      filled: true,
+      fillColor: const Color(0xFF131511),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFD4FF2A)),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.redAccent),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.redAccent),
       ),
     );
   }

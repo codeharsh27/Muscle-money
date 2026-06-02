@@ -68,7 +68,8 @@ export class MarketService {
     // Attempt to fetch real data from Yahoo Finance
     try {
       // Use dynamic import since yahoo-finance2 is cjs/esm mixed sometimes or just require
-      const yahooFinance = require('yahoo-finance2').default;
+      const YahooFinance = require('yahoo-finance2').default;
+      const yahooFinance = new YahooFinance();
       const quote = await yahooFinance.quote(symbol.toUpperCase());
       if (quote && quote.regularMarketPrice) {
         // Convert to minor units (e.g. $150.50 -> 15050)

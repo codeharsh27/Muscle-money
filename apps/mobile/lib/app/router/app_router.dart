@@ -12,6 +12,7 @@ import '../../features/intro/presentation/intro_screen.dart';
 import '../../features/learning/presentation/learning_screen.dart';
 import '../../features/onboarding/presentation/onboarding_controller.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/presentation/generating_plan_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/personal_info_screen.dart';
 import '../../features/profile/presentation/settings_screens.dart';
@@ -19,20 +20,32 @@ import '../../features/simulator/presentation/simulator_screen.dart';
 import '../../features/wallet/presentation/wallet_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+  RouterNotifier(this._ref) {
+    _ref.listen(authControllerProvider, (_, __) => notifyListeners());
+    _ref.listen(onboardingStatusProvider, (_, __) => notifyListeners());
+  }
+}
+
+final routerNotifierProvider = Provider<RouterNotifier>((ref) => RouterNotifier(ref));
+
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authControllerProvider);
-  final onboardingState = ref.watch(onboardingStatusProvider);
-  final isAuthenticated = authState.valueOrNull != null;
+  final notifier = ref.watch(routerNotifierProvider);
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: notifier,
     redirect: (context, state) {
+      final authState = ref.read(authControllerProvider);
+      final onboardingState = ref.read(onboardingStatusProvider);
+      final isAuthenticated = authState.valueOrNull != null;
       final location = state.matchedLocation;
       final authLoading = authState.isLoading;
       final onboardingLoading = onboardingState.isLoading;
 
       if (authLoading || (isAuthenticated && onboardingLoading)) {
-        return location == '/splash' ? null : '/splash';
+        return null;
       }
 
       final isAuthRoute = location == '/sign-in' || location == '/sign-up';
@@ -56,8 +69,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return '/onboarding';
         }
 
-        if (isCompleted && (location == '/splash' || location == '/onboarding' || isAuthRoute)) {
-          return '/dashboard';
+        if (isCompleted) {
+          if (location == '/onboarding') {
+            return '/generating-plan';
+          }
+          if (location == '/splash' || isAuthRoute) {
+            return '/dashboard';
+          }
         }
       }
 
@@ -86,6 +104,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/generating-plan',
+        builder: (context, state) => const GeneratingPlanScreen(),
       ),
       GoRoute(
         path: '/profile',

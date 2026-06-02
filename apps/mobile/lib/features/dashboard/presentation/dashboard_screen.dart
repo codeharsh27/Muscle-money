@@ -328,10 +328,12 @@ class _HabitProgressGraph extends StatelessWidget {
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: List.generate(
-                      progressHistory.length,
-                      (i) => FlSpot(i.toDouble(), progressHistory[i].toDouble()),
-                    ),
+                    spots: progressHistory.isEmpty
+                        ? const [FlSpot(0, 0), FlSpot(1, 0)]
+                        : List.generate(
+                            progressHistory.length,
+                            (i) => FlSpot(i.toDouble(), progressHistory[i].toDouble()),
+                          ),
                     isCurved: true,
                     color: Colors.greenAccent,
                     barWidth: 3,

@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { WalletTransactionType } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
@@ -17,6 +17,7 @@ export class LearningService {
     private readonly prisma: PrismaService,
     private readonly gamificationService: GamificationService,
     private readonly walletService: WalletService,
+    @Inject(forwardRef(() => AnalyticsService))
     private readonly analyticsService: AnalyticsService,
     private readonly config: ConfigService,
   ) {}

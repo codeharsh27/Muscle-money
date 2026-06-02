@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { GamificationService } from '../gamification/gamification.service';
 import { LearningService } from '../learning/learning.service';
@@ -10,6 +10,7 @@ export class AnalyticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gamification: GamificationService,
+    @Inject(forwardRef(() => LearningService))
     private readonly learning: LearningService,
     private readonly aiService: AiService,
   ) {}

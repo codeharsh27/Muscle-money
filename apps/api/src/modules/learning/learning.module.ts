@@ -9,5 +9,6 @@ import { LearningService } from './learning.service';
   imports: [GamificationModule, WalletModule, forwardRef(() => AnalyticsModule)],
   controllers: [LearningController],
   providers: [LearningService],
+  exports: [LearningService],
 })
 export class LearningModule {}

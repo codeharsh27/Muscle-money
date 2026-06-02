@@ -29,7 +29,8 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  await app.listen(config.get<number>('API_PORT', 3000));
+  const port = process.env.PORT || config.get<number>('API_PORT', 3000);
+  await app.listen(port, '0.0.0.0');
 }
 
 void bootstrap();

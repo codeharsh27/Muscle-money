@@ -166,6 +166,7 @@ model Profile {
   investmentExperience String?
   spendingHabits      Json?
   learningPreferences Json?
+  contactNumber       String?
   onboardingCompleted Boolean         @default(false)
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt

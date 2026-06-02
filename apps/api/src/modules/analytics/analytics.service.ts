@@ -1,9 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { GamificationService } from '../gamification/gamification.service';
+import { LearningService } from '../learning/learning.service';
+import { AiService } from '../ai/ai.service';
+import { startOfMonth, startOfWeek } from 'date-fns';
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gamification: GamificationService,
+    private readonly learning: LearningService,
+    private readonly aiService: AiService,
+  ) {}
 
   async getDashboard(userId: string) {
     const now = new Date();
@@ -38,7 +47,10 @@ export class AnalyticsService {
         },
       }),
       this.prisma.quizAttempt.findMany({ where: { userId } }),
-      this.prisma.learningProgress.findMany({ where: { userId } }),
+      this.prisma.learningProgress.findMany({ 
+        where: { userId },
+        include: { lesson: true }
+      }),
       this.prisma.streak.findUnique({ where: { userId } }),
       this.prisma.learningActionCompletion.findMany({ where: { userId } }),
       this.prisma.savingsGoal.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
@@ -110,16 +122,14 @@ export class AnalyticsService {
     score = Math.min(100, Math.max(0, score));
 
     // Nova AI Insight
-    let novaInsight = "Let's set your Fixed Salary so I can give you personalized savings advice.";
-    if (monthlyIncomeMinor > 0) {
-      if (score >= 80) {
-        novaInsight = 'Incredible job! Your savings rate is excellent. Consider investing some of these savings in the Simulator.';
-      } else if (score >= 60) {
-        novaInsight = 'You are on the right track! Try pushing your savings to 20% of your salary for maximum growth.';
-      } else {
-        novaInsight = 'Your savings could use a boost. Try finding small expenses to cut this week and save them on PhonePe or Groww.';
-      }
-    }
+    const aiContext = {
+      monthlyIncomeMinor,
+      monthlySavingsMinor,
+      simulatorEquityMinor: simulatorAccount?.ledger.reduce((total, entry) => total + (entry.direction === 'CREDIT' ? entry.amountMinor : -entry.amountMinor), 0) ?? 0,
+      streakCount: streak?.currentStreak ?? 0,
+    };
+    
+    const novaInsight = await this.aiService.generateFinancialInsight(aiContext);
 
     // Simulator metrics
     const simulatorCashMinor = simulatorAccount?.ledger.reduce((total, entry) => total + (entry.direction === 'CREDIT' ? entry.amountMinor : -entry.amountMinor), 0) ?? 0;
@@ -131,15 +141,23 @@ export class AnalyticsService {
     const totalXp = quizAttempts.reduce((total, attempt) => total + attempt.xpAwarded, 0);
     const correctAttempts = quizAttempts.filter((attempt) => attempt.isCorrect).length;
 
-    // Generate dynamic 7-point progress history
-    const baseProgress = Math.min(100, (totalXp / 100) + (monthlySavingsMinor / 100000) + score);
+    // Total Learning Minutes
+    const totalLearningMinutes = progress.reduce((total, item) => {
+      if (item.completedAt && item.lesson) {
+        return total + item.lesson.estimatedMinutes;
+      }
+      return total;
+    }, 0);
+
+    // Generate dynamic 7-point progress history (Discipline Graph starts at 0 for new users)
+    const baseProgress = Math.min(100, (totalXp / 50) + (monthlySavingsMinor / 50000) + (simulatorHoldingsMinor / 100000));
     const progressHistory = [
-      Math.max(0, baseProgress - 30),
-      Math.max(0, baseProgress - 25),
-      Math.max(0, baseProgress - 15),
-      Math.max(0, baseProgress - 10),
-      Math.max(0, baseProgress - 5),
-      Math.max(0, baseProgress - 2),
+      Math.max(0, baseProgress * 0.2),
+      Math.max(0, baseProgress * 0.3),
+      Math.max(0, baseProgress * 0.5),
+      Math.max(0, baseProgress * 0.65),
+      Math.max(0, baseProgress * 0.8),
+      Math.max(0, baseProgress * 0.95),
       baseProgress,
     ].map(v => Math.round(v));
 
@@ -168,6 +186,7 @@ export class AnalyticsService {
         openPositions: simulatorAccount?.positions.length ?? 0,
       },
       learning: {
+        totalLearningMinutes,
         totalXp,
         level: Math.floor(totalXp / 250) + 1,
         streakCount: streak?.currentCount ?? 0,

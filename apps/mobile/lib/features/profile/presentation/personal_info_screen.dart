@@ -14,6 +14,8 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   final _formKey = GlobalKey<FormState>();
   
   late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _contactController;
   late TextEditingController _incomeController;
   String _knowledgeLevel = 'BEGINNER';
   bool _isSaving = false;
@@ -22,12 +24,16 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _contactController = TextEditingController();
     _incomeController = TextEditingController();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
+    _contactController.dispose();
     _incomeController.dispose();
     super.dispose();
   }
@@ -35,8 +41,10 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   void _populateForm(Map<String, dynamic> userProfile) {
     if (_nameController.text.isEmpty) {
       _nameController.text = userProfile['fullName'] ?? '';
+      _emailController.text = userProfile['email'] ?? '';
       
       final profile = userProfile['profile'] ?? {};
+      _contactController.text = profile['contactNumber'] ?? '';
       if (profile['monthlyIncomeMinor'] != null) {
         _incomeController.text = (profile['monthlyIncomeMinor'] / 100).toStringAsFixed(0);
       }
@@ -54,6 +62,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
       
       await ref.read(profileRepositoryProvider).updateProfile({
         'fullName': _nameController.text.trim(),
+        'contactNumber': _contactController.text.trim(),
         'monthlyIncomeMinor': monthlyIncomeMinor,
         'knowledgeLevel': _knowledgeLevel,
       });
@@ -117,6 +126,28 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                     validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                   ),
                   
+                  const SizedBox(height: 24),
+                  const Text('Email Address', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _emailController,
+                    style: const TextStyle(color: Colors.white54),
+                    readOnly: true, // Email is read-only from auth
+                    decoration: _inputDecoration('Your email address').copyWith(
+                      fillColor: Colors.white.withValues(alpha: 0.02),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  const Text('Contact Number', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _contactController,
+                    style: const TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.phone,
+                    decoration: _inputDecoration('Enter your contact number'),
+                  ),
+
                   const SizedBox(height: 24),
                   const Text('Monthly Income (₹)', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),

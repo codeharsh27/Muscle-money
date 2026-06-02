@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -133,9 +134,41 @@ class DashboardScreen extends ConsumerWidget {
 // Golden Wallet Card
 // ---------------------------------------------------------
 
-class _GoldenWalletCard extends StatelessWidget {
+class _GoldenWalletCard extends StatefulWidget {
   final int balanceMinor;
   const _GoldenWalletCard({required this.balanceMinor});
+
+  @override
+  State<_GoldenWalletCard> createState() => _GoldenWalletCardState();
+}
+
+class _GoldenWalletCardState extends State<_GoldenWalletCard> {
+  bool _isObscured = true;
+  Timer? _obscureTimer;
+
+  @override
+  void dispose() {
+    _obscureTimer?.cancel();
+    super.dispose();
+  }
+
+  void _toggleObscure() {
+    setState(() {
+      _isObscured = !_isObscured;
+    });
+
+    _obscureTimer?.cancel();
+
+    if (!_isObscured) {
+      _obscureTimer = Timer(const Duration(seconds: 20), () {
+        if (mounted) {
+          setState(() {
+            _isObscured = true;
+          });
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,29 +198,39 @@ class _GoldenWalletCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.1), shape: BoxShape.circle),
-                    child: const Icon(Icons.account_balance_wallet, color: Colors.black87, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text('TOTAL SAVINGS', style: TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-                ],
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.account_balance_wallet, color: Colors.black87, size: 24),
               ),
+              const SizedBox(width: 12),
+              const Text('TOTAL SAVINGS', style: TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
             ],
           ),
-          const SizedBox(height: 32),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              formatMinorMoney(balanceMinor, currency: '₹'),
-              style: const TextStyle(color: Colors.black87, fontSize: 48, fontWeight: FontWeight.w900, letterSpacing: -1),
-            ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _isObscured ? '••••••' : formatMinorMoney(widget.balanceMinor, currency: '₹'),
+                    style: const TextStyle(color: Colors.black87, fontSize: 48, fontWeight: FontWeight.w900, letterSpacing: -1),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  _isObscured ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.black54,
+                ),
+                onPressed: _toggleObscure,
+              ),
+            ],
           ),
           const SizedBox(height: 32),
           SizedBox(
@@ -205,7 +248,7 @@ class _GoldenWalletCard extends StatelessWidget {
               ),
               child: const Text('+ ADD NEW SAVE', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1)),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -250,64 +293,84 @@ class _HabitProgressGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(color: Colors.greenAccent.withValues(alpha: 0.15), shape: BoxShape.circle),
-              child: const Icon(Icons.trending_up, color: Colors.greenAccent, size: 16),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'DISCIPLINE SCORE',
-              style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Your learning and saving habits are compounding!',
-          style: TextStyle(color: Colors.white54, fontSize: 13),
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          height: 140,
-          child: LineChart(
-            LineChartData(
-              gridData: const FlGridData(show: false),
-              titlesData: const FlTitlesData(show: false),
-              borderData: FlBorderData(show: false),
-              lineBarsData: [
-                LineChartBarData(
-                  spots: List.generate(
-                    progressHistory.length,
-                    (i) => FlSpot(i.toDouble(), progressHistory[i].toDouble()),
-                  ),
-                  isCurved: true,
-                  color: Colors.greenAccent,
-                  barWidth: 3,
-                  isStrokeCapRound: true,
-                  dotData: const FlDotData(show: false),
-                  belowBarData: BarAreaData(
-                    show: true,
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.greenAccent.withValues(alpha: 0.3),
-                        Colors.greenAccent.withValues(alpha: 0.0),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.show_chart, color: Colors.greenAccent, size: 24),
+              const SizedBox(width: 12),
+              const Text(
+                'DISCIPLINE GROWTH',
+                style: TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Your learning and saving habits are compounding!',
+            style: TextStyle(color: Colors.white54, fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 140,
+            child: LineChart(
+              LineChartData(
+                gridData: const FlGridData(show: false),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: List.generate(
+                      progressHistory.length,
+                      (i) => FlSpot(i.toDouble(), progressHistory[i].toDouble()),
+                    ),
+                    isCurved: true,
+                    color: Colors.greenAccent,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.greenAccent.withValues(alpha: 0.3),
+                          Colors.greenAccent.withValues(alpha: 0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () {
+                context.push('/streak');
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.greenAccent,
+                side: const BorderSide(color: Colors.greenAccent),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: const Text('View Progress', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -405,23 +468,26 @@ class _StreakPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16, top: 12, bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 18),
-          const SizedBox(width: 6),
-          Text(
-            '$streakCount',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-        ],
+    return GestureDetector(
+      onTap: () => context.push('/streak'),
+      child: Container(
+        margin: const EdgeInsets.only(right: 16, top: 12, bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 18),
+            const SizedBox(width: 6),
+            Text(
+              '$streakCount',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }

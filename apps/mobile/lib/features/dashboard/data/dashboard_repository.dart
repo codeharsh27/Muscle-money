@@ -42,6 +42,7 @@ class DashboardSummary {
     required this.quizAccuracyPercent,
     required this.lessonsStarted,
     required this.lessonsCompleted,
+    this.totalLearningMinutes = 0,
     this.progressHistory = const [],
     this.health,
     this.goals = const [],
@@ -65,6 +66,7 @@ class DashboardSummary {
   final int quizAccuracyPercent;
   final int lessonsStarted;
   final int lessonsCompleted;
+  final int totalLearningMinutes;
   final List<int> progressHistory;
   final HealthSummary? health;
   final List<DashboardGoal> goals;
@@ -96,6 +98,7 @@ class DashboardSummary {
       simulatorHoldingsMinor: simulator['holdingsValueMinor'] as int,
       simulatorEquityMinor: simulator['totalEquityMinor'] as int,
       openPositions: simulator['openPositions'] as int,
+      totalLearningMinutes: learning['totalLearningMinutes'] as int? ?? 0,
       totalXp: learning['totalXp'] as int,
       level: learning['level'] as int? ?? 1,
       streakCount: learning['streakCount'] as int? ?? 0,

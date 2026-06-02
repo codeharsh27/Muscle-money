@@ -7,6 +7,7 @@ import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
 import '../../features/auth/presentation/sign_up_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/dashboard/presentation/streak_screen.dart';
 import '../../features/intro/presentation/intro_screen.dart';
 import '../../features/learning/presentation/learning_screen.dart';
 import '../../features/onboarding/presentation/onboarding_controller.dart';
@@ -93,6 +94,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile/personal-info',
         builder: (context, state) => const PersonalInfoScreen(),
+      ),
+      GoRoute(
+        path: '/streak',
+        builder: (context, state) => const StreakScreen(),
       ),
       GoRoute(
         path: '/profile/notifications',

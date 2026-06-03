@@ -104,7 +104,8 @@ CRITICAL RULES:
       return result.response.text().trim();
     } catch (error) {
       this.logger.error('Failed to generate chat response', error);
-      return `Oops, sorry ${name}! I'm having a little trouble connecting to my brain right now. Can we try again in a second?`;
+      const msg = error instanceof Error ? error.message : String(error);
+      return `Oops, sorry ${name}! I'm having a little trouble connecting to my brain right now (Error: ${msg.substring(0, 100)}). Can we try again in a second?`;
     }
   }
 }

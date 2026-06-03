@@ -5,7 +5,11 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import '../config/app_config.dart';
 
 final dioProvider = Provider<Dio>((ref) {
-  final dio = Dio(BaseOptions(baseUrl: AppConfig.apiBaseUrl));
+  final dio = Dio(BaseOptions(
+    baseUrl: AppConfig.apiBaseUrl,
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+  ));
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {

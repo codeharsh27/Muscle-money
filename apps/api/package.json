@@ -42,13 +42,15 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "yahoo-finance2": "^3.15.2",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@nestjs/cli": "^11.0.21",
+    "@nestjs/schematics": "^11.0.9",
+    "prisma": "^5.20.0",
+    "typescript": "^5.6.2"
   },
   "devDependencies": {
     "@muscle-money/eslint-config": "*",
     "@muscle-money/tsconfig": "*",
-    "@nestjs/cli": "^11.0.21",
-    "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.21",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.13",
@@ -56,10 +58,8 @@
     "@types/passport-jwt": "^4.0.1",
     "eslint": "^9.11.1",
     "jest": "^29.7.0",
-    "prisma": "^5.20.0",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.2"
+    "ts-node": "^10.9.2"
   }
 }

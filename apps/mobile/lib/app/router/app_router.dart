@@ -20,6 +20,17 @@ import '../../features/simulator/presentation/simulator_screen.dart';
 import '../../features/wallet/presentation/wallet_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+CustomTransitionPage<void> _fadeTransitionPage({required LocalKey key, required Widget child}) {
+  return CustomTransitionPage<void>(
+    key: key,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(opacity: animation, child: child);
+    },
+    transitionDuration: const Duration(milliseconds: 300),
+  );
+}
+
 class RouterNotifier extends ChangeNotifier {
   final Ref _ref;
   RouterNotifier(this._ref) {
@@ -84,54 +95,57 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/splash',
-        builder: (context, state) => const Scaffold(
-          backgroundColor: Color(0xFF0F111A),
-          body: Center(child: CircularProgressIndicator(color: Colors.greenAccent)),
+        pageBuilder: (context, state) => _fadeTransitionPage(
+          key: state.pageKey,
+          child: const Scaffold(
+            backgroundColor: Color(0xFF0F111A),
+            body: Center(child: CircularProgressIndicator(color: Colors.greenAccent)),
+          ),
         ),
       ),
       GoRoute(
         path: '/intro',
-        builder: (context, state) => const IntroScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const IntroScreen()),
       ),
       GoRoute(
         path: '/sign-in',
-        builder: (context, state) => const SignInScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const SignInScreen()),
       ),
       GoRoute(
         path: '/sign-up',
-        builder: (context, state) => const SignUpScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const SignUpScreen()),
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const OnboardingScreen()),
       ),
       GoRoute(
         path: '/generating-plan',
-        builder: (context, state) => const GeneratingPlanScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const GeneratingPlanScreen()),
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const ProfileScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const ProfileScreen()),
       ),
       GoRoute(
         path: '/profile/personal-info',
-        builder: (context, state) => const PersonalInfoScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const PersonalInfoScreen()),
       ),
       GoRoute(
         path: '/streak',
-        builder: (context, state) => const StreakScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const StreakScreen()),
       ),
       GoRoute(
         path: '/profile/notifications',
-        builder: (context, state) => const NotificationsScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const NotificationsScreen()),
       ),
       GoRoute(
         path: '/profile/privacy',
-        builder: (context, state) => const PrivacySecurityScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const PrivacySecurityScreen()),
       ),
       GoRoute(
         path: '/profile/help',
-        builder: (context, state) => const HelpAboutScreen(),
+        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const HelpAboutScreen()),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -142,7 +156,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/dashboard',
-                builder: (context, state) => const DashboardScreen(),
+                pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const DashboardScreen()),
               ),
             ],
           ),
@@ -150,7 +164,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/learning',
-                builder: (context, state) => const LearningScreen(),
+                pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const LearningScreen()),
               ),
             ],
           ),
@@ -158,7 +172,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/wallet',
-                builder: (context, state) => const WalletScreen(),
+                pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const WalletScreen()),
               ),
             ],
           ),
@@ -166,7 +180,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/simulator',
-                builder: (context, state) => const SimulatorScreen(),
+                pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const SimulatorScreen()),
               ),
             ],
           ),

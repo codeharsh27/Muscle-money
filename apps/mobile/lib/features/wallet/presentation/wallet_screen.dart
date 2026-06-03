@@ -5,6 +5,7 @@ import '../../../core/formatters/money_format.dart';
 import '../../../core/services/notification_interceptor.dart';
 import '../../dashboard/data/dashboard_repository.dart';
 import '../data/wallet_repository.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 final walletDashboardProvider = FutureProvider<DashboardSummary>((ref) {
   return ref.watch(dashboardRepositoryProvider).load();
@@ -18,10 +19,28 @@ class WalletScreen extends ConsumerStatefulWidget {
 }
 
 class _WalletScreenState extends ConsumerState<WalletScreen> {
+  bool _smsPermissionGranted = false;
+  bool _notificationPermissionGranted = false;
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => _initNotificationInterceptor());
+    Future.microtask(() {
+      _initNotificationInterceptor();
+      _checkPermissions();
+    });
+  }
+
+  Future<void> _checkPermissions() async {
+    final interceptor = ref.read(notificationInterceptorProvider);
+    final notifGranted = await interceptor.isPermissionGranted();
+    final smsGranted = await Permission.sms.isGranted;
+    if (mounted) {
+      setState(() {
+        _notificationPermissionGranted = notifGranted;
+        _smsPermissionGranted = smsGranted;
+      });
+    }
   }
 
   Future<void> _initNotificationInterceptor() async {
@@ -50,9 +69,24 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
     final granted = await interceptor.isPermissionGranted();
     if (granted) {
       _startListening(interceptor);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Auto-tracking enabled!')));
+      if (mounted) {
+        setState(() => _notificationPermissionGranted = true);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notification Auto-tracking enabled!')));
+      }
     } else {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permission denied. Cannot track spending.')));
+    }
+  }
+
+  Future<void> _requestSmsPermission() async {
+    final status = await Permission.sms.request();
+    if (status.isGranted) {
+      if (mounted) {
+        setState(() => _smsPermissionGranted = true);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('SMS Auto-tracking enabled!')));
+      }
+    } else {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('SMS permission denied.')));
     }
   }
 
@@ -481,14 +515,54 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
         Text('Total this month: ${formatMinorMoney(dashboard.monthlySpendingsMinor)}', style: TextStyle(color: colorScheme.onSurfaceVariant)),
         const SizedBox(height: 16),
         if (dashboard.recentSpendings.isEmpty)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Text(
-                'No recent spending tracked. Enable Auto-Track to automatically log your UPI payments.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: colorScheme.onSurfaceVariant),
-              ),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: colorScheme.primary.withValues(alpha: 0.5)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: colorScheme.primary, size: 28),
+                    const SizedBox(width: 12),
+                    const Expanded(child: Text('Setup Auto-Tracking', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'To automatically log your UPI payments and build your Muscle Money dashboard without manual entry, grant the following permissions:',
+                  style: TextStyle(color: colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 24),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: _notificationPermissionGranted ? Colors.green.withValues(alpha: 0.2) : colorScheme.surfaceContainerHighest,
+                    child: Icon(Icons.notifications, color: _notificationPermissionGranted ? Colors.green : colorScheme.onSurfaceVariant),
+                  ),
+                  title: const Text('Read Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Detect UPI payment alerts', style: TextStyle(fontSize: 12)),
+                  trailing: _notificationPermissionGranted 
+                      ? const Icon(Icons.check_circle, color: Colors.green)
+                      : TextButton(onPressed: _requestNotificationPermission, child: const Text('Enable')),
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    backgroundColor: _smsPermissionGranted ? Colors.green.withValues(alpha: 0.2) : colorScheme.surfaceContainerHighest,
+                    child: Icon(Icons.sms, color: _smsPermissionGranted ? Colors.green : colorScheme.onSurfaceVariant),
+                  ),
+                  title: const Text('Read SMS', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Detect bank transaction texts', style: TextStyle(fontSize: 12)),
+                  trailing: _smsPermissionGranted 
+                      ? const Icon(Icons.check_circle, color: Colors.green)
+                      : TextButton(onPressed: _requestSmsPermission, child: const Text('Enable')),
+                ),
+              ],
             ),
           )
         else

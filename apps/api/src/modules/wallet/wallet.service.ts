@@ -17,32 +17,7 @@ export class WalletService {
       throw new NotFoundException('Wallet not found');
     }
 
-    // Seed dummy spendings if empty (for demo purposes)
-    const spendingCount = await this.prisma.spending.count({ where: { userId } });
-    if (spendingCount === 0) {
-      const dummyTransactions = [
-        { merchant: 'KFC', amount: 45000, desc: 'Dining' },
-        { merchant: 'Amazon', amount: 125000, desc: 'Shopping' },
-        { merchant: 'Uber', amount: 32000, desc: 'Transport' },
-        { merchant: 'Starbucks', amount: 25000, desc: 'Coffee' },
-      ];
-
-      for (const [index, dummy] of dummyTransactions.entries()) {
-        const date = new Date();
-        date.setDate(date.getDate() - index - 1);
-
-        await this.prisma.spending.create({
-          data: {
-            userId,
-            amountMinor: dummy.amount,
-            merchant: dummy.merchant,
-            category: dummy.desc,
-            platform: 'UPI',
-            capturedAt: date,
-          },
-        });
-      }
-    }
+    // Dummy spendings removed for auto-track onboarding flow
 
     return {
       walletId: wallet.id,

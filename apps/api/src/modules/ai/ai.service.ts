@@ -61,8 +61,6 @@ Provide the short insight now:`;
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      
       const systemPrompt = `You are Nova, a human-like financial coach for Muscle Money.
 CRITICAL RULES:
 1. You must ALWAYS greet the user by their name: ${name}.
@@ -71,6 +69,11 @@ CRITICAL RULES:
 4. Do NOT use markdown bolding (no **).
 5. ONLY answer questions related to personal finance, investing, saving, or the Muscle Money app. If the user asks about anything else, politely pivot back to finance.
 6. The user's message will often start with an [APP CONTEXT FOR NOVA...] block. Use this live data (their savings, spending, recent transactions, simulator equity, learning progress, and financial score) to make your advice hyper-personalized to their actual financial situation.`;
+
+      const model = this.genAI.getGenerativeModel({ 
+        model: 'gemini-1.5-flash',
+        systemInstruction: systemPrompt,
+      });
 
       // Map history from Flutter (isCoach) or direct API (role)
       let formattedHistory = history.map(h => ({
@@ -95,7 +98,6 @@ CRITICAL RULES:
 
       const chat = model.startChat({
         history: alternatingHistory,
-        systemInstruction: systemPrompt,
       });
 
       const result = await chat.sendMessage(message);

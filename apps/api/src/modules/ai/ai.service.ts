@@ -72,11 +72,29 @@ CRITICAL RULES:
 5. ONLY answer questions related to personal finance, investing, saving, or the Muscle Money app. If the user asks about anything else, politely pivot back to finance.
 6. The user's message will often start with an [APP CONTEXT FOR NOVA...] block. Use this live data (their savings, spending, recent transactions, simulator equity, learning progress, and financial score) to make your advice hyper-personalized to their actual financial situation.`;
 
+      // Map history from Flutter (isCoach) or direct API (role)
+      let formattedHistory = history.map(h => ({
+        role: (h.role === 'user' || h.isCoach === false) ? 'user' : 'model',
+        parts: [{ text: h.text || h.parts?.[0]?.text || '' }],
+      }));
+
+      // Gemini strictly requires history to start with 'user'
+      while (formattedHistory.length > 0 && formattedHistory[0].role === 'model') {
+        formattedHistory.shift();
+      }
+
+      // Gemini strictly requires alternating roles. Compress consecutive messages of the same role.
+      const alternatingHistory: any[] = [];
+      for (const msg of formattedHistory) {
+        if (alternatingHistory.length > 0 && alternatingHistory[alternatingHistory.length - 1].role === msg.role) {
+          alternatingHistory[alternatingHistory.length - 1].parts[0].text += '\n\n' + msg.parts[0].text;
+        } else {
+          alternatingHistory.push(msg);
+        }
+      }
+
       const chat = model.startChat({
-        history: history.map(h => ({
-          role: h.role === 'user' ? 'user' : 'model',
-          parts: [{ text: h.text || h.parts?.[0]?.text || '' }],
-        })),
+        history: alternatingHistory,
         systemInstruction: systemPrompt,
       });
 

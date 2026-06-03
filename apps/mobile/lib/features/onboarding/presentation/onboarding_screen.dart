@@ -53,7 +53,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (!mounted) return;
     final state = ref.read(onboardingControllerProvider);
     if (state.hasValue && state.value?.completed == true) {
-      context.go('/generating-plan');
+      context.go('/dashboard');
     }
   }
 

@@ -12,7 +12,6 @@ import '../../features/intro/presentation/intro_screen.dart';
 import '../../features/learning/presentation/learning_screen.dart';
 import '../../features/onboarding/presentation/onboarding_controller.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
-import '../../features/onboarding/presentation/generating_plan_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/profile/presentation/personal_info_screen.dart';
 import '../../features/profile/presentation/settings_screens.dart';
@@ -81,8 +80,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         }
 
         if (isCompleted) {
-          if (location == '/onboarding') {
-            return '/generating-plan';
+          if (location == '/onboarding' || location == '/generating-plan') {
+            return '/dashboard';
           }
           if (location == '/splash' || isAuthRoute) {
             return '/dashboard';
@@ -118,10 +117,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const OnboardingScreen()),
-      ),
-      GoRoute(
-        path: '/generating-plan',
-        pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const GeneratingPlanScreen()),
       ),
       GoRoute(
         path: '/profile',

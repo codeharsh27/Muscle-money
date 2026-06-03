@@ -13,7 +13,7 @@ export class AiService {
     }
   }
 
-  async generateInsight(context: any): Promise<string> {
+  async generateFinancialInsight(context: any): Promise<string> {
     if (!this.apiKey) {
       return this.fallbackInsight(context);
     }
@@ -25,7 +25,7 @@ Context: ${JSON.stringify(context)}`;
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": \`Bearer \${this.apiKey}\`,
+          "Authorization": `Bearer ${this.apiKey}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -34,7 +34,7 @@ Context: ${JSON.stringify(context)}`;
         })
       });
 
-      if (!response.ok) throw new Error(\`OpenRouter Error: \${response.status}\`);
+      if (!response.ok) throw new Error(`OpenRouter Error: ${response.status}`);
       const data = await response.json();
       return data.choices?.[0]?.message?.content?.trim() || this.fallbackInsight(context);
     } catch (error) {
@@ -53,18 +53,18 @@ Context: ${JSON.stringify(context)}`;
 
   async chatWithCoach(message: string, history: any[], name: string): Promise<string> {
     if (!this.apiKey) {
-      return \`Hey \${name}! I'm Nova, but I'm currently offline (API key missing). I can still help you with your Muscle Money dashboard though!\`;
+      return `Hey ${name}! I'm Nova, but I'm currently offline (API key missing). I can still help you with your Muscle Money dashboard though!`;
     }
 
     try {
-      const systemPrompt = \`You are Nova, a human-like financial coach for Muscle Money.
+      const systemPrompt = `You are Nova, a human-like financial coach for Muscle Money.
 CRITICAL RULES:
-1. You must ALWAYS greet the user by their name: \${name}.
+1. You must ALWAYS greet the user by their name: ${name}.
 2. Talk like a real human. Be warm and encouraging.
 3. Keep answers VERY short and sweet (max 2-3 sentences).
 4. Do NOT use markdown bolding (no **).
 5. ONLY answer questions related to personal finance, investing, saving, or the Muscle Money app. If the user asks about anything else, politely pivot back to finance.
-6. The user's message will often start with an [APP CONTEXT FOR NOVA...] block. Use this live data (their savings, spending, recent transactions, simulator equity, learning progress, and financial score) to make your advice hyper-personalized to their actual financial situation.\`;
+6. The user's message will often start with an [APP CONTEXT FOR NOVA...] block. Use this live data (their savings, spending, recent transactions, simulator equity, learning progress, and financial score) to make your advice hyper-personalized to their actual financial situation.`;
 
       // Map history for OpenAI/OpenRouter format
       let formattedHistory = history.map(h => ({
@@ -82,7 +82,7 @@ CRITICAL RULES:
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": \`Bearer \${this.apiKey}\`,
+          "Authorization": `Bearer ${this.apiKey}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -93,7 +93,7 @@ CRITICAL RULES:
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(\`OpenRouter Error: \${response.status} - \${errorText}\`);
+        throw new Error(`OpenRouter Error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
@@ -102,7 +102,7 @@ CRITICAL RULES:
     } catch (error) {
       this.logger.error('Failed to generate chat response', error);
       const msg = error instanceof Error ? error.message : String(error);
-      return \`Oops, sorry \${name}! I'm having a little trouble connecting to my brain right now (Error: \${msg}). Can we try again in a second?\`;
+      return `Oops, sorry ${name}! I'm having a little trouble connecting to my brain right now (Error: ${msg}). Can we try again in a second?`;
     }
   }
 }

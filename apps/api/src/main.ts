@@ -10,7 +10,10 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   const config = app.get(ConfigService);
-  const apiPrefix = config.getOrThrow<string>('API_PREFIX');
+  let apiPrefix = config.getOrThrow<string>('API_PREFIX');
+  if (apiPrefix.endsWith('/v1')) {
+    apiPrefix = apiPrefix.replace('/v1', '');
+  }
   const corsOrigins = config.get<string>('CORS_ORIGINS')?.split(',') ?? [];
 
   app.setGlobalPrefix(apiPrefix);

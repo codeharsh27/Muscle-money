@@ -13,13 +13,17 @@ export class SeedService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    const count = await prisma.lesson.count();
-    if (count === 0) {
-      this.logger.log('Database is empty. Running seed scripts...');
-      await seedLessons();
-      await seedMarketAssets();
-      await seedHistoricalScenarios();
-      this.logger.log('Seeding completed.');
+    try {
+      const count = await prisma.lesson.count();
+      if (count === 0) {
+        this.logger.log('Database is empty. Running seed scripts...');
+        await seedLessons();
+        await seedMarketAssets();
+        await seedHistoricalScenarios();
+        this.logger.log('Seeding completed.');
+      }
+    } catch (error) {
+      this.logger.error('Failed to run seed script on startup:', error);
     }
   }
 }

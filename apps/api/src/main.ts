@@ -8,7 +8,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
   let apiPrefix = config.getOrThrow<string>('API_PREFIX');
   if (apiPrefix.endsWith('/v1')) {

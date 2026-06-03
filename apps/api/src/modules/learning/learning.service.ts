@@ -9,6 +9,8 @@ import { CompleteActionDto } from './dto/complete-action.dto';
 import { ChatCoachDto } from './dto/chat-coach.dto';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
 
+import { AiService } from '../ai/ai.service';
+
 @Injectable()
 export class LearningService {
   private readonly logger = new Logger(LearningService.name);
@@ -20,6 +22,7 @@ export class LearningService {
     @Inject(forwardRef(() => AnalyticsService))
     private readonly analyticsService: AnalyticsService,
     private readonly config: ConfigService,
+    private readonly aiService: AiService,
   ) {}
 
   async listLessons(userId: string) {
@@ -177,8 +180,6 @@ export class LearningService {
   }
 
   async chatCoach(userId: string, dto: ChatCoachDto) {
-    const aiServiceUrl = this.config.getOrThrow<string>('AI_SERVICE_URL');
-
     // Enrich with user context for personalized responses
     const [profile, dashboard] = await Promise.all([
       this.prisma.profile.findUnique({ where: { userId }, include: { user: true } }),
@@ -210,33 +211,9 @@ export class LearningService {
 - Financial Score: ${dashboard.wallet.financialScore}/100
 ]`;
 
-    // Prepend context to the user message so Nova knows who she's talking to
     const enrichedMessage = `${contextStr}\n\nUser Message: ${dto.message}`;
-
-    try {
-      const response = await fetch(`${aiServiceUrl}/api/v1/learning/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: enrichedMessage,
-          history: dto.history,
-        }),
-        signal: AbortSignal.timeout(15_000), // 15s timeout
-      });
-
-      if (!response.ok) {
-        this.logger.error(`AI service returned ${response.status}`);
-        return { reply: "Nova is having a moment. Try again shortly! 🤖" };
-      }
-
-      const data = await response.json() as { reply: string };
-      return { reply: data.reply };
-    } catch (error: unknown) {
-      this.logger.error(`AI service unreachable: ${error instanceof Error ? error.message : String(error)}`);
-      return {
-        reply: "Looks like Nova is taking a short break. Make sure the AI service is running and your Gemini API key is set in apps/ai-service/.env 🔧",
-      };
-    }
+    const reply = await this.aiService.chatWithCoach(enrichedMessage, dto.history, name);
+    return { reply };
   }
 
   private normalizeAnswerKey(answerKey: unknown) {

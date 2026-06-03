@@ -54,4 +54,36 @@ Provide the short insight now:`;
     }
     return "Try automating your savings. Small amounts add up over time!";
   }
+
+  async chatWithCoach(message: string, history: any[], name: string): Promise<string> {
+    if (!this.genAI) {
+      return `Hey ${name}! I'm Nova, but I'm currently offline (API key missing). I can still help you with your Muscle Money dashboard though!`;
+    }
+
+    try {
+      const model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      
+      const systemPrompt = `You are Nova, a human-like financial coach for Muscle Money.
+CRITICAL RULES:
+1. You must ALWAYS greet the user by their name: ${name}.
+2. Talk like a real human. Be warm and encouraging.
+3. Keep answers VERY short and sweet (max 2-3 sentences).
+4. Do NOT use markdown bolding (no **).
+5. ONLY answer questions related to personal finance, investing, saving, or the Muscle Money app. If the user asks about anything else, politely pivot back to finance.`;
+
+      const chat = model.startChat({
+        history: history.map(h => ({
+          role: h.role === 'user' ? 'user' : 'model',
+          parts: [{ text: h.text || h.parts?.[0]?.text || '' }],
+        })),
+        systemInstruction: systemPrompt,
+      });
+
+      const result = await chat.sendMessage(message);
+      return result.response.text().trim();
+    } catch (error) {
+      this.logger.error('Failed to generate chat response', error);
+      return `Oops, sorry ${name}! I'm having a little trouble connecting to my brain right now. Can we try again in a second?`;
+    }
+  }
 }

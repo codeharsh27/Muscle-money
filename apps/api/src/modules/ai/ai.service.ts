@@ -30,6 +30,7 @@ Context: ${JSON.stringify(context)}`;
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
+          max_tokens: 150,
           messages: [{ role: 'user', content: prompt }],
         })
       });
@@ -87,6 +88,7 @@ CRITICAL RULES:
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
+          max_tokens: 300,
           messages: messages,
         })
       });

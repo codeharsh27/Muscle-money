@@ -151,7 +151,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/dashboard',
-                pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const DashboardScreen()),
+                builder: (context, state) => const DashboardScreen(),
               ),
             ],
           ),
@@ -159,7 +159,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/learning',
-                pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const LearningScreen()),
+                builder: (context, state) => const LearningScreen(),
               ),
             ],
           ),
@@ -167,7 +167,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/wallet',
-                pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const WalletScreen()),
+                builder: (context, state) => const WalletScreen(),
               ),
             ],
           ),
@@ -175,7 +175,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/simulator',
-                pageBuilder: (context, state) => _fadeTransitionPage(key: state.pageKey, child: const SimulatorScreen()),
+                builder: (context, state) => const SimulatorScreen(),
               ),
             ],
           ),

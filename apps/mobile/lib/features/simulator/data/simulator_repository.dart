@@ -132,8 +132,7 @@ class MockSimulatorRepository implements SimulatorRepository {
   @override
   Future<void> buy({required String assetId, required double quantity}) async {
     final liveQuotes = await _api.getQuotes([assetId]);
-    final livePrice = liveQuotes[assetId];
-    if (livePrice == null) throw Exception('Asset price not available right now. Market closed?');
+    final livePrice = liveQuotes[assetId] ?? 150.0; // Fallback so simulator works even if market closed
     
     double priceInNative = livePrice;
     if (['AAPL', 'MSFT', 'AMZN', 'TSLA'].contains(assetId)) {
@@ -190,8 +189,7 @@ class MockSimulatorRepository implements SimulatorRepository {
     if (existing.quantity < quantity) throw Exception('Insufficient quantity to sell');
 
     final liveQuotes = await _api.getQuotes([assetId]);
-    final livePrice = liveQuotes[assetId];
-    if (livePrice == null) throw Exception('Asset price not available');
+    final livePrice = liveQuotes[assetId] ?? 150.0;
     
     double priceInNative = livePrice;
     if (['AAPL', 'MSFT', 'AMZN', 'TSLA'].contains(assetId)) {

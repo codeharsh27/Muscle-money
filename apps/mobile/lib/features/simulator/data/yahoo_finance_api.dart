@@ -23,6 +23,8 @@ class YahooFinanceApi {
 
   YahooFinanceApi() : _dio = Dio(BaseOptions(
     baseUrl: 'https://query1.finance.yahoo.com',
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 5),
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
     },

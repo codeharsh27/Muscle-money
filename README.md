@@ -1,123 +1,88 @@
-# Muscle Money
+# Muscle Money 2.0 🚀
+*Building Financial Muscle Through Gamification & AI*
 
-Muscle Money is a production-oriented fintech and AI learning platform for students and young adults. The product direction is "Duolingo for Finance": adaptive lessons, gamified progress, simulated investing, auto-save habits, analytics, and safe AI explanations.
+Welcome to **Muscle Money 2.0**—a comprehensive fintech ecosystem designed specifically for students and young adults. The product direction is **"Duolingo for Finance"**, combining adaptive learning, gamified progress tracking, a zero-risk stock simulator, and automated expense tracking, all guided by an empathetic AI named **Nova**.
 
-This repository is a Turborepo monorepo with a NestJS API, FastAPI AI service, Flutter mobile app, shared TypeScript packages, and local infrastructure.
+---
 
-## Architecture
+## 🎯 Motivation Behind the App
 
-```text
-apps/
-  api/          NestJS API, Prisma, PostgreSQL, Redis, BullMQ
-  ai-service/   FastAPI service for structured educational AI outputs
-  mobile/       Flutter app using Riverpod, GoRouter, Dio, Hive, secure storage
-packages/
-  shared-types/ API contracts shared across TypeScript services
-  eslint-config/
-  tsconfig/
-  ui-tokens/
-infrastructure/
-  docker/
-  nginx/
-  scripts/
-```
+Financial literacy is arguably one of the most critical life skills, yet it is rarely taught effectively in traditional education systems. Young adults are entering a complex economy burdened by inflation, predatory lending, and an overwhelming array of investment options. 
 
-## Fintech Safety Rules
+The traditional approach to learning finance—reading dense books or watching theoretical lectures—has failed. People learn best by *doing*, but "doing" finance in the real world comes with the risk of losing hard-earned money. 
 
-Balances are derived from immutable ledger rows. Application code must never directly mutate wallet or simulator balances. Wallet savings, simulated deposits, and simulator cash movement are represented as ledger transactions with idempotency keys.
+**Our Goal:** To bridge this gap by creating an environment where users can learn the theory (Learning), practice without risk (Simulator), automate their budgeting seamlessly (Wallet Tracking), and receive tailored guidance (Nova AI)—all in one unified, engaging platform.
 
-Market data must flow through backend fetchers, Redis cache, and PostgreSQL snapshots before reaching mobile clients. The frontend never calls external market providers directly.
+---
 
-AI is limited to educational explanations, recommendations, summaries, and adaptive learning support. It must not execute transactions, control balances, or provide personalized investment advice.
+## 🏗️ Technology Stack
 
-## Local Prerequisites
+Muscle Money leverages a modern, robust, and scalable architecture:
 
-- Node.js 22
-- npm 11
-- Docker Desktop
-- Flutter stable SDK
-- Python 3.11
+- **Frontend (Mobile App):** Flutter (Dart) for high-performance, beautiful, cross-platform UI. State management is powered by Riverpod, and routing by GoRouter.
+- **Backend APIs:** A Turborepo monorepo containing a NestJS (TypeScript) API for core application data and a FastAPI (Python) service for machine learning and AI orchestration.
+- **AI Brain:** Powered by OpenRouter and Gemini 1.5 Flash. The LLM is highly tuned with a specific system prompt to act as "Nova"—a conversational, non-robotic, expert financial coach.
+- **Local Database & Automation:** Local persistent storage for offline-first capabilities, along with native Android plugins (`telephony`, `flutter_local_notifications`) for background SMS and notification interception.
+- **Live Market Data:** Integration with the Yahoo Finance API for real-time stock quotes.
 
-## Environment
+---
 
-Copy the example env file and replace secrets before running services:
+## 🧠 Automated Tracking: SMS & Notification Listener
 
-```powershell
-Copy-Item .env.example .env
-```
+One of the most powerful features of Muscle Money is its **frictionless expense tracking**. Traditional budgeting apps fail because they require manual data entry. Muscle Money automates this completely.
 
-Use secrets with at least 32 characters for `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`.
+### How It Works:
+1. **Background Interception:** With explicit user permission, the app uses Android's Notification Listener and SMS reading capabilities to listen for incoming messages from banks, UPI apps (PhonePe, GPay, Paytm), and credit card providers.
+2. **Regex Parsing:** When a transaction occurs, the app silently parses the SMS/Notification text to extract the **Amount**, **Merchant**, and **Transaction Type** (Debit/Credit).
+3. **Categorization:** The transaction is instantly categorized (e.g., Food, Transport, Utilities) and pushed to the user's local Wallet state.
 
-## Setup
+### The Benefit:
+Users get real-time, accurate financial tracking without ever having to type a single number. Their financial profile is built invisibly in the background.
 
-```powershell
-npm.cmd install
-docker compose up -d postgres redis
-npm.cmd run api:prisma:generate
-npm.cmd run api:prisma:migrate
-npm.cmd --workspace @muscle-money/api run prisma:seed
-npm.cmd run dev
-```
+---
 
-Flutter:
+## 📊 Financial Score & Nova's Actionable Insights
 
-```powershell
-Set-Location apps/mobile
-flutter pub get
-flutter analyze
-flutter run --dart-define=API_BASE_URL=http://<YOUR_PC_LAN_IP>:3000/api/v1
-```
+With the data gathered from the automated tracking, **Nova (The AI)** acts as a personal CFO.
 
-Use `http://10.0.2.2:3000/api/v1` for the Android emulator. Use your computer's LAN IP address for a physical Android phone on the same Wi-Fi network.
+- **The Financial Score (0-100):** A dynamic rating calculated based on the user's savings ratio, spending velocity, and adherence to their goals. 
+- **Actionable Steps:** Instead of just showing charts, Nova analyzes the recent spending data and provides smart, actionable steps. For example:
+  > *"Hey! I noticed you spent 30% of your income on dining out this week. Let's try cooking at home for the next 3 days to boost your score by 5 points and keep your savings goal on track."*
 
-AI service:
+---
 
-```powershell
-Set-Location apps/ai-service
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install fastapi "uvicorn[standard]" pydantic-settings google-generativeai
-uvicorn app.main:app --reload --port 8000
-```
+## 📱 Core App Screens & Modules
 
-## Phase 1 Status
+### 1. 🤖 Nova (AI Financial Coach)
+- **What it is:** The heart of Muscle Money. Nova handles user onboarding to understand their salary, goals, and risk appetite.
+- **How it helps:** Nova provides personalized, human-like, real-time advice. She only answers finance-related queries, ensuring the user stays focused on their wealth-building journey.
 
-- Turborepo workspace created.
-- NestJS API bootstrap added with config validation, security middleware, global validation, response wrapping, exception filtering, request logging, rate limiting, Prisma, Redis, BullMQ, and authentication architecture.
-- Prisma schema added for users, profiles, wallet ledger, savings rules, learning, simulator ledger, market assets, notifications, streaks, badges, and audit logs.
-- Flutter app bootstrap added with feature-first folders, dark theme, GoRouter, Riverpod, Dio, secure token storage, and first auth screen.
-- FastAPI AI service boundary added with structured response models and explicit finance safety boundaries.
-- Docker Compose added for PostgreSQL and Redis.
-- Dockerfiles, nginx config, CI workflow, env examples, shared packages, linting, formatting, and TypeScript configs added.
+### 2. 💸 The Wallet (Dashboard)
+- **What it is:** The command center for the user's real-world finances.
+- **Features:** Displays the Financial Score, recent spending (auto-tracked via SMS), monthly savings, and Nova's daily insights. 
+- **How it helps:** Gives the user a bird's-eye view of their financial health at a single glance.
 
-## Phase 2 Status
+### 3. 📚 Learning (Duolingo for Finance)
+- **What it is:** Bite-sized, interactive courses ranging from "Budgeting 101" to "Advanced Options Trading."
+- **Features:** Gamified progression with XP (Experience Points), levels, and day streaks. Every lesson completed and simulator trade executed increases the user's streak.
+- **How it helps:** Makes financial education addictive and rewarding. It replaces "doom-scrolling" with "wealth-scrolling."
 
-- Authentication now uses persisted `auth_sessions` with hashed refresh tokens, expiry, revocation, and rotation.
-- Refresh tokens are submitted directly to `/auth/refresh`; access tokens are not accepted for refresh rotation.
-- Email verification uses single-use hashed tokens with expiry through `/auth/verify-email`.
-- Logout supports current-session and all-session revocation.
-- `/auth/me` returns the authenticated user from a validated access token.
-- Auth actions write audit log records for registration, login, refresh rotation, refresh-token reuse detection, email verification, and logout.
-- Flutter sign-in is wired to the real API contract, persists tokens with secure storage, and exposes loading/error states through Riverpod.
-- Backend unit tests cover registration, session creation, refresh rotation, refresh-token reuse revocation, and email verification.
-- Flutter widget tests cover sign-in form rendering and validation.
+### 4. 📈 Stock Simulator (Paper Trading)
+- **What it is:** A zero-risk environment where users can buy and sell real stocks (e.g., Reliance, TCS, AAPL) using virtual currency.
+- **Features:** 
+  - **Live Pricing:** Pulls real-time data from Yahoo Finance.
+  - **Time Machine:** A visual tool showing users how their current simulated investments would compound over 10-15 years.
+  - **Nova's Insights:** Nova reviews the simulated portfolio and provides feedback (e.g., *"Your portfolio is heavily weighted in Tech. Consider diversifying with some Index Funds to reduce volatility."*)
+- **How it helps:** Users can test strategies and make mistakes without losing real money. It builds the confidence needed to eventually enter the real stock market.
 
-## Next Engineering Phases
+---
 
-1. Add production email delivery and push notification providers.
-2. Add external market ingestion jobs that write Redis cache and PostgreSQL snapshots.
-3. Expand mobile dashboard into dedicated wallet, learning, simulator, and analytics screens.
-4. Add database-backed integration tests and AI JSON contract tests.
-5. Add app release signing, Firebase Crashlytics, and store-ready Android build configuration.
+## 🎓 Summary for Presentation
 
-## Phase 3 Status
+Muscle Money is not just an app; it is a **financial behavioral change engine**. By combining:
+1. **Frictionless Data Collection** (SMS/Notification tracking)
+2. **Actionable AI Intelligence** (Nova's coaching and scoring)
+3. **Risk-Free Practice** (Stock Simulator)
+4. **Gamified Education** (Learning streaks and XP)
 
-- Onboarding API added with status and completion endpoints.
-- Onboarding stores goals, risk profile, knowledge level, income, spending habits, and learning preferences.
-- Mobile signup screen added and wired to the real registration API.
-- Mobile onboarding screen added and wired to the real onboarding API.
-- Mobile dashboard shell added and wired to analytics summary API.
-- Mobile routing now redirects between auth, onboarding, and dashboard states.
-- Onboarding service tests added, including expected failure behavior for invalid goals.
-
-Submission/report tracking lives in [docs/submission-notes.md](docs/submission-notes.md).
+We are equipping the next generation with the financial muscle they need to achieve true financial independence.

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/formatters/money_format.dart';
-import 'dashboard_screen.dart'; // To access dashboardSummaryProvider
+import '../data/dashboard_repository.dart';
 
 class StreakScreen extends ConsumerWidget {
   const StreakScreen({super.key});

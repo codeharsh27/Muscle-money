@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import '../../../core/formatters/money_format.dart';
-import '../../dashboard/presentation/dashboard_screen.dart'; 
+import '../../dashboard/data/dashboard_repository.dart';
 
 class TimeMachineTab extends ConsumerStatefulWidget {
   const TimeMachineTab({super.key});

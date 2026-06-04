@@ -5,6 +5,7 @@ import '../../../core/formatters/money_format.dart';
 import '../data/simulator_models.dart';
 import '../data/simulator_repository.dart';
 import '../data/yahoo_finance_api.dart';
+import '../../dashboard/data/dashboard_repository.dart';
 import 'candlestick_chart.dart';
 
 class ChartRequest {
@@ -79,6 +80,8 @@ class _AssetDetailScreenState extends ConsumerState<AssetDetailScreen> {
             
             // Invalidate the portfolio so UI updates
             ref.invalidate(simulatorPortfolioProvider);
+            ref.read(mockStreakProvider.notifier).state++;
+            ref.invalidate(dashboardSummaryProvider);
             
             parentScaffold.showSnackBar(
               const SnackBar(content: Text('Order executed successfully!'), backgroundColor: Colors.green),

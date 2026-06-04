@@ -4,9 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/network/api_client.dart';
 
+import '../../simulator/data/simulator_repository.dart';
+
+final mockStreakProvider = StateProvider<int>((ref) => 3);
+
+final dashboardSummaryProvider = FutureProvider.autoDispose<DashboardSummary>((ref) {
+  return ref.watch(dashboardRepositoryProvider).load();
+});
+
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {
   if (AppConfig.skipAuth) {
-    return MockDashboardRepository();
+    return MockDashboardRepository(ref);
   }
   return DashboardRepository(ref.watch(dioProvider));
 });
@@ -220,33 +228,42 @@ class RecentSpending {
 }
 
 class MockDashboardRepository implements DashboardRepository {
+  MockDashboardRepository(this.ref);
+  final ProviderRef ref;
+
   @override
   Dio get _dio => throw UnimplementedError();
 
   @override
   Future<DashboardSummary> load() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return const DashboardSummary(
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    // Fetch live data from Simulator
+    final simulatorRepo = ref.read(simulatorRepositoryProvider);
+    final portfolio = await simulatorRepo.portfolio();
+    final streak = ref.read(mockStreakProvider);
+
+    return DashboardSummary(
       monthlySavingsMinor: 300000,
       financialScore: 75,
       novaInsight: "Great job saving this month! You are hitting 20% of your fixed salary.",
       monthlyIncomeMinor: 1500000,
-      externalSavings: [
+      externalSavings: const [
         ExternalSaving(platform: 'PhonePe', amountMinor: 100000),
         ExternalSaving(platform: 'Groww', amountMinor: 200000),
       ],
       monthlySpendingsMinor: 120000,
-      recentSpendings: [
+      recentSpendings: const [
         RecentSpending(amountMinor: 50000, platform: 'PhonePe', merchant: 'Starbucks', category: 'Food'),
         RecentSpending(amountMinor: 20000, platform: 'GPay', merchant: 'Uber', category: 'Transport'),
       ],
-      simulatorCashMinor: 500000,
-      simulatorHoldingsMinor: 550000,
-      simulatorEquityMinor: 1050000,
-      openPositions: 3,
-      totalXp: 450,
+      simulatorCashMinor: portfolio.cashBalanceMinor,
+      simulatorHoldingsMinor: portfolio.totalEquityMinor - portfolio.cashBalanceMinor,
+      simulatorEquityMinor: portfolio.totalEquityMinor,
+      openPositions: portfolio.positionsCount,
+      totalXp: 450 + (streak * 10), // dynamically adjust XP based on streak
       level: 2,
-      streakCount: 3,
+      streakCount: streak,
       quizAccuracyPercent: 92,
       lessonsStarted: 5,
       lessonsCompleted: 4,

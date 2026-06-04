@@ -9,9 +9,7 @@ import '../../../core/formatters/money_format.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/dashboard_repository.dart';
 
-final dashboardSummaryProvider = FutureProvider<DashboardSummary>((ref) {
-  return ref.watch(dashboardRepositoryProvider).load();
-});
+
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});

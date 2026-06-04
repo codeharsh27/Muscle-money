@@ -8,6 +8,10 @@ final simulatorRepositoryProvider = Provider<SimulatorRepository>((ref) {
   return MockSimulatorRepository(YahooFinanceApi());
 });
 
+final simulatorPortfolioProvider = FutureProvider.autoDispose<SimulatorPortfolio>((ref) {
+  return ref.watch(simulatorRepositoryProvider).portfolio();
+});
+
 abstract class SimulatorRepository {
   Future<SimulatorPortfolio> portfolio();
   Future<List<MarketAsset>> assets();

@@ -5,9 +5,7 @@ import '../../../core/formatters/money_format.dart';
 import '../data/simulator_models.dart';
 import '../data/simulator_repository.dart';
 
-final simulatorPortfolioProvider = FutureProvider.autoDispose<SimulatorPortfolio>((ref) {
-  return ref.watch(simulatorRepositoryProvider).portfolio();
-});
+
 
 class PortfolioTab extends ConsumerWidget {
   const PortfolioTab({super.key});

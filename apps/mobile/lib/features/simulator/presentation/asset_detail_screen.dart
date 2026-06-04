@@ -47,21 +47,24 @@ class _AssetDetailScreenState extends ConsumerState<AssetDetailScreen> {
   String _selectedTimeframe = '3M';
 
   void _showOrderSheet(BuildContext context, bool isBuy) {
+    final parentNavigator = Navigator.of(context);
+    final parentScaffold = ScaffoldMessenger.of(context);
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _OrderSheet(
+      builder: (sheetContext) => _OrderSheet(
         asset: widget.asset,
         isBuy: isBuy,
         onConfirm: (quantity) async {
-          Navigator.pop(context); // close sheet
+          Navigator.pop(sheetContext); // close sheet
           
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (context) => const Center(child: CircularProgressIndicator()),
+            builder: (dialogContext) => const Center(child: CircularProgressIndicator()),
           );
           
           try {
@@ -72,14 +75,18 @@ class _AssetDetailScreenState extends ConsumerState<AssetDetailScreen> {
               await repo.sell(assetId: widget.asset.id, quantity: quantity);
             }
             if (!mounted) return;
-            Navigator.pop(context); // remove loader
-            ScaffoldMessenger.of(context).showSnackBar(
+            parentNavigator.pop(); // remove loader
+            
+            // Invalidate the portfolio so UI updates
+            ref.invalidate(simulatorPortfolioProvider);
+            
+            parentScaffold.showSnackBar(
               const SnackBar(content: Text('Order executed successfully!'), backgroundColor: Colors.green),
             );
           } catch (e) {
             if (!mounted) return;
-            Navigator.pop(context); // remove loader
-            ScaffoldMessenger.of(context).showSnackBar(
+            parentNavigator.pop(); // remove loader
+            parentScaffold.showSnackBar(
               SnackBar(content: Text('Order Failed: $e'), backgroundColor: Colors.red),
             );
           }
